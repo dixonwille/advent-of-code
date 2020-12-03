@@ -35,7 +35,7 @@ fn find_pair_sum_search(report: &[usize], sum: usize) -> Option<(usize, usize)> 
 }
 
 #[aoc(day1, part1, unsorted)]
-pub fn part1_unsorted(report: &Vec<usize>) -> Option<usize> {
+fn part1_unsorted(report: &Vec<usize>) -> Option<usize> {
     match find_pair_sum(report, 2020) {
         Some((left, right)) => Some(left * right),
         None => None,
@@ -43,7 +43,7 @@ pub fn part1_unsorted(report: &Vec<usize>) -> Option<usize> {
 }
 
 #[aoc(day1, part1, sorted)]
-pub fn part1_sorted(report: &Vec<usize>) -> Option<usize> {
+fn part1_sorted(report: &Vec<usize>) -> Option<usize> {
     let mut report = report.clone();
     report.sort_unstable();
     match find_pair_sum(&report, 2020) {
@@ -53,7 +53,7 @@ pub fn part1_sorted(report: &Vec<usize>) -> Option<usize> {
 }
 
 #[aoc(day1, part1, sorted_search)]
-pub fn part1_sorted_search(report: &Vec<usize>) -> Option<usize> {
+fn part1_sorted_search(report: &Vec<usize>) -> Option<usize> {
     let mut report = report.clone();
     report.sort_unstable();
     match find_pair_sum_search(&report, 2020) {
@@ -63,7 +63,7 @@ pub fn part1_sorted_search(report: &Vec<usize>) -> Option<usize> {
 }
 
 #[aoc(day1, part1, sorted_ends)]
-pub fn part1_sorted_ends(report: &Vec<usize>) -> Option<usize> {
+fn part1_sorted_ends(report: &Vec<usize>) -> Option<usize> {
     let mut report = report.clone();
     report.sort_unstable();
     let mut left = 0;
@@ -90,7 +90,7 @@ pub fn part1_sorted_ends(report: &Vec<usize>) -> Option<usize> {
 }
 
 #[aoc(day1, part2, unsorted)]
-pub fn part2_unsorted(report: &Vec<usize>) -> Option<usize> {
+fn part2_unsorted(report: &Vec<usize>) -> Option<usize> {
     for i in 0..(report.len() - 2) {
         for j in (i + 1)..(report.len() - 1) {
             if report[i] + report[j] >= 2020 {
@@ -107,7 +107,7 @@ pub fn part2_unsorted(report: &Vec<usize>) -> Option<usize> {
 }
 
 #[aoc(day1, part2, sorted)]
-pub fn part2_sorted(report: &Vec<usize>) -> Option<usize> {
+fn part2_sorted(report: &Vec<usize>) -> Option<usize> {
     let mut report = report.clone();
     report.sort_unstable();
     for i in 0..(report.len() - 2) {
@@ -120,7 +120,7 @@ pub fn part2_sorted(report: &Vec<usize>) -> Option<usize> {
 }
 
 #[aoc(day1, part2, sorted_search)]
-pub fn part2_sorted_search(report: &Vec<usize>) -> Option<usize> {
+fn part2_sorted_search(report: &Vec<usize>) -> Option<usize> {
     let mut report = report.clone();
     report.sort_unstable();
     for i in 0..(report.len() - 2) {
@@ -132,7 +132,7 @@ pub fn part2_sorted_search(report: &Vec<usize>) -> Option<usize> {
     None
 }
 
-#[allow(dead_code, unused_imports)]
+#[cfg(test)]
 mod test {
     use super::*;
 

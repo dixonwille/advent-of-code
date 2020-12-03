@@ -90,7 +90,7 @@ fn parse_input_nom(input: &str) -> IResult<&str, Vec<Password>> {
 }
 
 #[aoc(day2, part1)]
-pub fn part1(passwords: &Vec<Password>) -> usize {
+fn part1(passwords: &Vec<Password>) -> usize {
     passwords.iter().fold(0, |valid, password| {
         let count = password.iter().fold(0, |count, c| {
             if *c as char == password.policy.character {
@@ -106,7 +106,7 @@ pub fn part1(passwords: &Vec<Password>) -> usize {
 }
 
 #[aoc(day2, part2)]
-pub fn part2(passwords: &Vec<Password>) -> usize {
+fn part2(passwords: &Vec<Password>) -> usize {
     passwords.iter().fold(0, |valid, password| {
         let v1 = password.get(password.policy.req1 - 1);
         let v2 = password.get(password.policy.req2 - 1);
@@ -139,10 +139,8 @@ pub fn part2(passwords: &Vec<Password>) -> usize {
     })
 }
 
-#[allow(dead_code, unused_imports)]
+#[cfg(test)]
 mod test {
-    use std::vec;
-
     use super::*;
     static PASSWORDS: &str = "1-3 a: abcde
 1-3 b: cdefg
