@@ -4,11 +4,8 @@ use std::ops::Deref;
 use aoc_runner_derive::{aoc, aoc_generator};
 use nom::{
     bytes::complete::tag,
-    character::complete::line_ending,
-    character::complete::{alpha1, anychar, char as c, digit1},
-    combinator::all_consuming,
-    combinator::map,
-    combinator::map_res,
+    character::complete::{alpha1, anychar, char as c, digit1, line_ending},
+    combinator::{all_consuming, map, map_res},
     multi::separated_list1,
     IResult,
 };
@@ -36,7 +33,7 @@ pub struct Password {
     // We can use u8 for this because of our data set.
     // real world, correct way, would be to use char or glyphs
     // but that is less performant due to nature of how it has to be figured out
-    value: Vec<u8>, 
+    value: Vec<u8>,
 }
 
 impl Password {
@@ -113,9 +110,13 @@ fn part2(passwords: &Vec<Password>) -> usize {
         match (v1, v2) {
             (None, None) => valid,
             (Some(r1), Some(r2)) => {
-                if *r1 as char == password.policy.character && *r2 as char == password.policy.character {
+                if *r1 as char == password.policy.character
+                    && *r2 as char == password.policy.character
+                {
                     valid // don't increment as this is invalid
-                } else if *r1 as char == password.policy.character || *r2 as char == password.policy.character {
+                } else if *r1 as char == password.policy.character
+                    || *r2 as char == password.policy.character
+                {
                     valid + 1
                 } else {
                     valid // don't increment as this is invalid
