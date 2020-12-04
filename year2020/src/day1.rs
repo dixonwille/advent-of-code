@@ -23,7 +23,7 @@ fn find_pair_sum(report: &[usize], sum: usize) -> Option<(usize, usize)> {
 fn find_pair_sum_search(report: &[usize], sum: usize) -> Option<(usize, usize)> {
     for value in report {
         let want = sum - value;
-        if want <= 0 {
+        if want == 0 {
             continue;
         }
         match report.binary_search(&want) {
@@ -35,7 +35,7 @@ fn find_pair_sum_search(report: &[usize], sum: usize) -> Option<(usize, usize)> 
 }
 
 #[aoc(day1, part1, unsorted)]
-fn part1_unsorted(report: &Vec<usize>) -> Option<usize> {
+fn part1_unsorted(report: &[usize]) -> Option<usize> {
     match find_pair_sum(report, 2020) {
         Some((left, right)) => Some(left * right),
         None => None,
@@ -43,8 +43,8 @@ fn part1_unsorted(report: &Vec<usize>) -> Option<usize> {
 }
 
 #[aoc(day1, part1, sorted)]
-fn part1_sorted(report: &Vec<usize>) -> Option<usize> {
-    let mut report = report.clone();
+fn part1_sorted(report: &[usize]) -> Option<usize> {
+    let mut report = report.to_owned();
     report.sort_unstable();
     match find_pair_sum(&report, 2020) {
         Some((left, right)) => Some(left * right),
@@ -53,8 +53,8 @@ fn part1_sorted(report: &Vec<usize>) -> Option<usize> {
 }
 
 #[aoc(day1, part1, sorted_search)]
-fn part1_sorted_search(report: &Vec<usize>) -> Option<usize> {
-    let mut report = report.clone();
+fn part1_sorted_search(report: &[usize]) -> Option<usize> {
+    let mut report = report.to_owned();
     report.sort_unstable();
     match find_pair_sum_search(&report, 2020) {
         Some((left, right)) => Some(left * right),
@@ -63,8 +63,8 @@ fn part1_sorted_search(report: &Vec<usize>) -> Option<usize> {
 }
 
 #[aoc(day1, part1, sorted_ends)]
-fn part1_sorted_ends(report: &Vec<usize>) -> Option<usize> {
-    let mut report = report.clone();
+fn part1_sorted_ends(report: &[usize]) -> Option<usize> {
+    let mut report = report.to_owned();
     report.sort_unstable();
     let mut left = 0;
     let mut right = report.len() - 1;
@@ -90,7 +90,7 @@ fn part1_sorted_ends(report: &Vec<usize>) -> Option<usize> {
 }
 
 #[aoc(day1, part2, unsorted)]
-fn part2_unsorted(report: &Vec<usize>) -> Option<usize> {
+fn part2_unsorted(report: &[usize]) -> Option<usize> {
     for i in 0..(report.len() - 2) {
         for j in (i + 1)..(report.len() - 1) {
             if report[i] + report[j] >= 2020 {
@@ -107,8 +107,8 @@ fn part2_unsorted(report: &Vec<usize>) -> Option<usize> {
 }
 
 #[aoc(day1, part2, sorted)]
-fn part2_sorted(report: &Vec<usize>) -> Option<usize> {
-    let mut report = report.clone();
+fn part2_sorted(report: &[usize]) -> Option<usize> {
+    let mut report = report.to_owned();
     report.sort_unstable();
     for i in 0..(report.len() - 2) {
         match find_pair_sum(&report[i + 1..], 2020 - report[i]) {
@@ -120,8 +120,8 @@ fn part2_sorted(report: &Vec<usize>) -> Option<usize> {
 }
 
 #[aoc(day1, part2, sorted_search)]
-fn part2_sorted_search(report: &Vec<usize>) -> Option<usize> {
-    let mut report = report.clone();
+fn part2_sorted_search(report: &[usize]) -> Option<usize> {
+    let mut report = report.to_owned();
     report.sort_unstable();
     for i in 0..(report.len() - 2) {
         match find_pair_sum_search(&report[i + 1..], 2020 - report[i]) {

@@ -111,9 +111,9 @@ fn parse_input_nom(input: &str) -> IResult<&str, Vec<Passport>> {
 }
 
 #[aoc(day4, part1)]
-fn part1(passports: &Vec<Passport>) -> usize {
+fn part1(passports: &[Passport]) -> usize {
     println!("{:?}", passports.len());
-    passports.into_iter().fold(0, |valid, passport| {
+    passports.iter().fold(0, |valid, passport| {
         if passport.birth_year.is_some()
             && passport.issue_year.is_some()
             && passport.expiration_year.is_some()

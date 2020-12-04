@@ -87,7 +87,7 @@ fn parse_input_nom(input: &str) -> IResult<&str, Vec<Password>> {
 }
 
 #[aoc(day2, part1)]
-fn part1(passwords: &Vec<Password>) -> usize {
+fn part1(passwords: &[Password]) -> usize {
     passwords.iter().fold(0, |valid, password| {
         let count = password.iter().fold(0, |count, c| {
             if *c as char == password.policy.character {
@@ -103,7 +103,7 @@ fn part1(passwords: &Vec<Password>) -> usize {
 }
 
 #[aoc(day2, part2)]
-fn part2(passwords: &Vec<Password>) -> usize {
+fn part2(passwords: &[Password]) -> usize {
     passwords.iter().fold(0, |valid, password| {
         let v1 = password.get(password.policy.req1 - 1);
         let v2 = password.get(password.policy.req2 - 1);
@@ -152,9 +152,9 @@ mod test {
         assert_eq!(
             parse_input(PASSWORDS),
             vec![
-                Password::new(1, 3, 'a', "abcde".as_bytes().to_owned()),
-                Password::new(1, 3, 'b', "cdefg".as_bytes().to_owned()),
-                Password::new(2, 9, 'c', "ccccccccc".as_bytes().to_owned()),
+                Password::new(1, 3, 'a', b"abcde".to_vec()),
+                Password::new(1, 3, 'b', b"cdefg".to_vec()),
+                Password::new(2, 9, 'c', b"ccccccccc".to_vec()),
             ]
         );
     }

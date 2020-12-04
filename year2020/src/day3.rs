@@ -88,8 +88,8 @@ fn parse_input_nom(input: &str) -> IResult<&str, Map> {
 #[aoc(day3, part1)]
 fn part1(map: &Map) -> usize {
     map.iter(1, 3).fold(0, |count, tree| match tree {
-        &true => count + 1,
-        &false => count,
+        true => count + 1,
+        false => count,
     })
 }
 
@@ -100,8 +100,8 @@ static SLOPES: [(usize, usize); 5] = [(1, 1), (1, 3), (1, 5), (1, 7), (2, 1)];
 fn part2(map: &Map) -> usize {
     SLOPES.iter().fold(1, |mult, (down, right)| {
         mult * map.iter(*down, *right).fold(0, |count, tree| match tree {
-            &true => count + 1,
-            &false => count,
+            true => count + 1,
+            false => count,
         })
     })
 }
