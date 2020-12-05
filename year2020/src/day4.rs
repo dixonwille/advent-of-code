@@ -6,9 +6,9 @@ use nom::{
     branch::alt,
     bytes::complete::{tag, take_till1},
     character::complete::{char as c, newline, one_of},
+    combinator::all_consuming,
     combinator::{map_res, opt},
-    multi::many1,
-    sequence::terminated,
+    multi::{many1, separated_list1},
     IResult,
 };
 
@@ -199,7 +199,7 @@ fn parse_passport(input: &str) -> IResult<&str, Passport> {
 }
 
 fn parse_input_nom(input: &str) -> IResult<&str, Vec<Passport>> {
-    many1(terminated(parse_passport, opt(newline)))(input)
+    all_consuming(separated_list1(newline, parse_passport))(input)
 }
 
 #[aoc(day4, part1)]
