@@ -2,7 +2,13 @@
 use std::collections::HashSet;
 
 use aoc_runner_derive::{aoc, aoc_generator};
-use nom::{IResult, character::complete::{alpha1, newline}, multi::separated_list1, sequence::tuple};
+use nom::{
+    character::complete::{alpha1, newline},
+    combinator::all_consuming,
+    multi::separated_list1,
+    sequence::tuple,
+    IResult,
+};
 
 #[derive(Debug, Eq, PartialEq)]
 struct Declaration {
@@ -15,7 +21,7 @@ struct DeclarationGroup {
 }
 
 impl DeclarationGroup {
-    fn condense (&self) -> HashSet<char> {
+    fn condense(&self) -> HashSet<char> {
         self.group.iter().fold(HashSet::new(), |mut set, g| {
             for g in &g.yes {
                 set.insert(g.to_owned());
@@ -34,7 +40,7 @@ impl DeclarationGroup {
                     count += 1;
                 }
             }
-            if count == size-1 {
+            if count == size - 1 {
                 set.insert(c.to_owned());
             }
         }
@@ -54,18 +60,19 @@ fn parse_declaration(input: &str) -> IResult<&str, Declaration> {
     for c in chars.chars() {
         set.insert(c);
     }
-    Ok((input, Declaration{
-        yes: set
-    }))
+    Ok((input, Declaration { yes: set }))
 }
 
 fn parse_declaration_group(input: &str) -> IResult<&str, DeclarationGroup> {
     let (input, decs) = separated_list1(newline, parse_declaration)(input)?;
-    Ok((input, DeclarationGroup{group: decs}))
+    Ok((input, DeclarationGroup { group: decs }))
 }
 
 fn parse_input_nom(input: &str) -> IResult<&str, Vec<DeclarationGroup>> {
-    separated_list1(tuple((newline, newline)), parse_declaration_group)(input)
+    all_consuming(separated_list1(
+        tuple((newline, newline)),
+        parse_declaration_group,
+    ))(input)
 }
 
 #[aoc(day6, part1)]
@@ -145,10 +152,7 @@ b";
                     ]
                 },
                 DeclarationGroup {
-                    group: vec![
-                        Declaration { yes: d1g3 },
-                        Declaration { yes: d2g3 }
-                    ]
+                    group: vec![Declaration { yes: d1g3 }, Declaration { yes: d2g3 }]
                 },
                 DeclarationGroup {
                     group: vec![
