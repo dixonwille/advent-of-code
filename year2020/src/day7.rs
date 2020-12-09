@@ -105,7 +105,7 @@ fn can_be_contained_in<'a>(
         return;
     }
     match map.get(description) {
-        None => {},
+        None => {}
         Some(set) => {
             for s in set {
                 can_be_contained_in(s, map, can_be_in);

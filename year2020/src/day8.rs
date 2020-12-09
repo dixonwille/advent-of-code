@@ -30,7 +30,9 @@ impl Operation {
                 *instruction += 1;
             }
             (Operation::Jmp(_), Some(f)) if f == *instruction => *instruction += 1,
-            (Operation::Jmp(offset), None) | (Operation::Jmp(offset), Some(_)) => *instruction += offset,
+            (Operation::Jmp(offset), None) | (Operation::Jmp(offset), Some(_)) => {
+                *instruction += offset
+            }
             (Operation::Nop(offset), Some(f)) if f == *instruction => *instruction += offset,
             (Operation::Nop(_), None) | (Operation::Nop(_), Some(_)) => *instruction += 1,
         }
@@ -97,13 +99,13 @@ fn part2(program: &[Operation]) -> Option<isize> {
         |(depth, counter)| graph.entry((*depth, *counter)).or_default().clone(),
         |(depth, counter)| *depth == 1 && *counter == (program.len() - 1) as isize,
     );
-    
+
     // figure out which instruction was flipped, AKA the last 0 depth entry
     let mut last = 0;
     for (depth, counter) in path? {
         if depth == 0 {
             last = counter;
-        }else {
+        } else {
             break;
         }
     }
