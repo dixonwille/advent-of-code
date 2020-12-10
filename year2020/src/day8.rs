@@ -170,7 +170,7 @@ jmp -4
 acc +6";
 
     #[test]
-    fn parsring_input() {
+    fn parsing_input() {
         assert_eq!(
             parse_input(PROGRAM),
             vec![
