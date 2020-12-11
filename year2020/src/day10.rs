@@ -1,4 +1,6 @@
 /// https://adventofcode.com/2020/day/10
+use std::collections::HashMap;
+
 use aoc_runner_derive::{aoc, aoc_generator};
 
 #[aoc_generator(day10)]
@@ -10,22 +12,79 @@ fn parse_input(input: &str) -> Vec<usize> {
 
 #[aoc(day10, part1)]
 fn part1(adapters: &[usize]) -> usize {
-    let (_, diff1, diff3) = adapters.iter().fold((0,0,1), |i, adapter| {
-        match adapter - i.0{
+    let (_, diff1, diff3) = adapters
+        .iter()
+        .fold((0, 0, 1), |i, adapter| match adapter - i.0 {
             1 => (*adapter, i.1 + 1, i.2),
             3 => (*adapter, i.1, i.2 + 1),
-            _ => (*adapter, i.1, i.2)
-        }
-    });
+            _ => (*adapter, i.1, i.2),
+        });
     diff1 * diff3
 }
 
 #[aoc(day10, part2)]
-fn part2(_input: &[usize]) -> usize {
-    // create graph
-    // backtrack to find total number of paths
-    // https://www.includehelp.com/data-structure-tutorial/count-all-the-possible-path-between-two-vertices.aspx
-    unimplemented!()
+fn part2(adapters: &[usize]) -> usize {
+    let device_jolts = adapters.iter().max().unwrap() + 3;
+    let graph = build_graph(adapters, &device_jolts);
+    let mut cache = HashMap::new();
+    path_count(&graph, &0, &device_jolts, &mut cache)
+}
+
+// Can make assumptions like a node will never fall back to itself so don't need to keep track of visited
+fn path_count<'a>(
+    graph: &'a HashMap<&'a usize, Vec<&'a usize>>,
+    start: &'a usize,
+    end: &'a usize,
+    cache: &mut HashMap<&'a usize, usize>,
+) -> usize {
+    if start == end {
+        1
+    } else {
+        graph.get(start).unwrap().iter().fold(0, |count, adj|{
+            match cache.get(adj) {
+                Some(c) => count + c,
+                None => {
+                    let c = path_count(graph, adj, end, cache);
+                    cache.insert(adj, c);
+                    count + c
+                }
+            }
+        })
+    }
+}
+
+fn build_graph<'a>(
+    adapters: &'a [usize],
+    device_jolts: &'a usize,
+) -> HashMap<&'a usize, Vec<&'a usize>> {
+    let mut graph: HashMap<_, Vec<_>> = HashMap::new();
+
+    //Add from wall to first adapter
+    for i in 1 as usize..4 {
+        if let Ok(idx) = adapters.binary_search(&i) {
+            graph
+                .entry(&0)
+                .or_default()
+                .push(adapters.get(idx).unwrap());
+        }
+    }
+
+    //Add from last adapter to device
+    graph
+        .entry(adapters.iter().max().unwrap())
+        .or_default()
+        .push(device_jolts);
+
+    adapters.iter().fold(graph, |mut g, adapter| {
+        for i in 1 as usize..4 {
+            if let Ok(idx) = adapters.binary_search(&(adapter + i)) {
+                g.entry(adapter)
+                    .or_default()
+                    .push(adapters.get(idx).unwrap());
+            }
+        }
+        g
+    })
 }
 
 #[cfg(test)]
