@@ -1,5 +1,4 @@
 /// https://adventofcode.com/2020/day/11
-
 // I like this guys approach better https://github.com/timvisee/advent-of-code-2020
 // TODO: dig into it more and make it more legible (comment the code etc.)
 use aoc_runner_derive::{aoc, aoc_generator};

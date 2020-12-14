@@ -56,32 +56,32 @@ fn part1(directions: &[Direction]) -> isize {
                 90 => {
                     std::mem::swap(&mut dir.0, &mut dir.1);
                     dir.0 *= -1;
-                },
+                }
                 180 => {
                     dir.0 *= -1;
                     dir.1 *= -1;
-                },
+                }
                 270 => {
                     std::mem::swap(&mut dir.0, &mut dir.1);
                     dir.1 *= -1;
-                },
-                _ => unreachable!()
-            }
+                }
+                _ => unreachable!(),
+            },
             Direction::Right(num) => match num {
                 90 => {
                     std::mem::swap(&mut dir.0, &mut dir.1);
                     dir.1 *= -1;
-                },
+                }
                 180 => {
                     dir.0 *= -1;
                     dir.1 *= -1;
-                },
+                }
                 270 => {
                     std::mem::swap(&mut dir.0, &mut dir.1);
                     dir.0 *= -1;
-                },
-                _ => unreachable!()
-            }
+                }
+                _ => unreachable!(),
+            },
             Direction::Forward(num) => {
                 pos.0 += dir.0 * *num;
                 pos.1 += dir.1 * *num;
@@ -93,7 +93,7 @@ fn part1(directions: &[Direction]) -> isize {
 
 #[aoc(day12, part2)]
 fn part2(directions: &[Direction]) -> isize {
-    let mut ship = (0,0);
+    let mut ship = (0, 0);
     let mut way = (10, 1);
     for d in directions {
         match d {
@@ -105,32 +105,32 @@ fn part2(directions: &[Direction]) -> isize {
                 90 => {
                     std::mem::swap(&mut way.0, &mut way.1);
                     way.0 *= -1;
-                },
+                }
                 180 => {
                     way.0 *= -1;
                     way.1 *= -1;
-                },
+                }
                 270 => {
                     std::mem::swap(&mut way.0, &mut way.1);
                     way.1 *= -1;
-                },
-                _ => unreachable!()
-            }
+                }
+                _ => unreachable!(),
+            },
             Direction::Right(num) => match num {
                 90 => {
                     std::mem::swap(&mut way.0, &mut way.1);
                     way.1 *= -1;
-                },
+                }
                 180 => {
                     way.0 *= -1;
                     way.1 *= -1;
-                },
+                }
                 270 => {
                     std::mem::swap(&mut way.0, &mut way.1);
                     way.0 *= -1;
-                },
-                _ => unreachable!()
-            }
+                }
+                _ => unreachable!(),
+            },
             Direction::Forward(num) => {
                 ship.0 += way.0 * num;
                 ship.1 += way.1 * num;

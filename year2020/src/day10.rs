@@ -40,16 +40,18 @@ fn path_count<'a>(
     if start == end {
         1
     } else {
-        graph.get(start).unwrap().iter().fold(0, |count, adj|{
-            match cache.get(adj) {
+        graph
+            .get(start)
+            .unwrap()
+            .iter()
+            .fold(0, |count, adj| match cache.get(adj) {
                 Some(c) => count + c,
                 None => {
                     let c = path_count(graph, adj, end, cache);
                     cache.insert(adj, c);
                     count + c
                 }
-            }
-        })
+            })
     }
 }
 
