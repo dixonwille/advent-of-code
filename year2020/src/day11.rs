@@ -1,6 +1,4 @@
 /// https://adventofcode.com/2020/day/11
-// I like this guys approach better https://github.com/timvisee/advent-of-code-2020
-// TODO: dig into it more and make it more legible (comment the code etc.)
 use aoc_runner_derive::{aoc, aoc_generator};
 use nom::{
     branch::alt,
@@ -282,7 +280,7 @@ fn parse_input_nom(input: &str) -> IResult<&str, FloorPlan> {
     )(input)
 }
 
-#[aoc(day11, part1)]
+#[aoc(day11, part1, mine)]
 fn part1(floor_plan: &FloorPlan) -> usize {
     let mut current = floor_plan.clone();
     let mut state = floor_plan.state();
@@ -298,7 +296,37 @@ fn part1(floor_plan: &FloorPlan) -> usize {
     current.occupied()
 }
 
-#[aoc(day11, part2)]
+// Works better since we find the indexes we want to look for before playing simulation
+// https://github.com/timvisee/advent-of-code-2020/blob/master/day11a/src/main.rs
+#[aoc(day11, part1, timvisee)]
+fn part1_iter(floor_plan: &FloorPlan) -> usize {
+    let neighbors = get_neighbors(floor_plan);
+    let (mut cur, mut prev) = (floor_plan.clone(), floor_plan.clone());
+
+    loop {
+        for (i, visible) in &neighbors {
+            let occup = visible.iter().filter(|o| prev.plan[**o] == Position::Occupied).count();
+            let (cur_seat, prev_seat) = (&mut cur.plan[*i], &prev.plan[*i]);
+
+            if prev_seat == &Position::Empty && occup == 0 {
+                *cur_seat = Position::Occupied;
+            }else if prev_seat == &Position::Occupied && occup >= 4 {
+                *cur_seat = Position::Empty;
+            }else {
+                *cur_seat = prev_seat.clone()
+            }
+        }
+        // current iteration is now previous
+        // we can use what is in previous as next current as we are always overwritting it's values
+        std::mem::swap(&mut cur, &mut prev);
+        if cur == prev {
+            break;
+        }
+    }
+    cur.plan.iter().filter(|p| p == &&Position::Occupied).count()
+}
+
+#[aoc(day11, part2, mine)]
 fn part2(floor_plan: &FloorPlan) -> usize {
     let mut current = floor_plan.clone();
     let mut state = floor_plan.state();
@@ -312,6 +340,98 @@ fn part2(floor_plan: &FloorPlan) -> usize {
         state = new_state;
     }
     current.occupied()
+}
+
+// Works better since we find the indexes we want to look for before playing simulation
+// https://github.com/timvisee/advent-of-code-2020/blob/master/day11b/src/main.rs
+#[aoc(day11, part2, timvisee)]
+fn part2_iter(floor_plan: &FloorPlan) -> usize {
+    let aof = get_aof(floor_plan);
+    let (mut cur, mut prev) = (floor_plan.clone(), floor_plan.clone());
+
+    loop {
+        for (i, visible) in &aof {
+            let occup = visible.iter().filter(|o| prev.plan[**o] == Position::Occupied).count();
+            let (cur_seat, prev_seat) = (&mut cur.plan[*i], &prev.plan[*i]);
+
+            if prev_seat == &Position::Empty && occup == 0 {
+                *cur_seat = Position::Occupied;
+            }else if prev_seat == &Position::Occupied && occup >= 5 {
+                *cur_seat = Position::Empty;
+            }else {
+                *cur_seat = prev_seat.clone()
+            }
+        }
+        // current iteration is now previous
+        // we can use what is in previous as next current as we are always overwritting it's values
+        std::mem::swap(&mut cur, &mut prev);
+        if cur == prev {
+            break;
+        }
+    }
+    cur.plan.iter().filter(|p| p == &&Position::Occupied).count()
+}
+
+fn get_neighbors(floor_plan: &FloorPlan) -> Vec<(usize, Vec<usize>)> {
+    floor_plan
+        .plan
+        .iter()
+        .enumerate()
+        .filter(|(_, p)| p != &&Position::Floor)
+        .map(|(i, _)| {
+            (
+                i,
+                (0..9)
+                    .filter(|p| p != &4) // exclude middle
+                    // generate x and y neighbors for i
+                    .map(|p| ((i % floor_plan.cols) as isize + p as isize % 3 - 1, (i / floor_plan.cols) as isize + p as isize / 3 - 1))
+                    // make sure we don't breach boundaries
+                    .filter(|(x, y)| *x >= 0 && *y >= 0 && *x < floor_plan.cols as isize && *y < floor_plan.rows as isize)
+                    // turn back into an index on array
+                    .map(|(x, y)| (y * floor_plan.cols as isize + x) as usize)
+                    // Only want neighbors that are seats (not a floor)
+                    .filter(|i| floor_plan.plan[*i] != Position::Floor)
+                    .collect(),
+            )
+        })
+        .collect()
+}
+
+fn get_aof(floor_plan: &FloorPlan) -> Vec<(usize, Vec<usize>)> {
+    floor_plan
+        .plan
+        .iter()
+        .enumerate()
+        .filter(|(_, p)| p != &&Position::Floor)
+        .map(|(i, _)| {
+            (
+                i,
+                (0..9)
+                    .filter(|p| p != &4) // exclude middle
+                    // generate relative x and y to i for neighbors
+                    .map(|p| (p as isize % 3 - 1, p as isize / 3 - 1)) 
+                    .filter_map(|(rx, ry)| {
+                        (1..)
+                            // get x and y from index and apply offsets with multiples (f) for scanning out
+                            .map(|f| {
+                                (
+                                    (i % floor_plan.cols) as isize + rx * f,
+                                    (i / floor_plan.cols) as isize + ry * f,
+                                )
+                            })
+                            // Make sure we don't breach boundaries
+                            .take_while(|(x, y)| {
+                                *x >= 0 && *y >= 0 && *x < floor_plan.cols as isize && *y < floor_plan.rows as isize
+                            })
+                            // Turn the x and y into an index
+                            .map(|(x, y)| (y * floor_plan.cols as isize + x) as usize)
+                            // only want the first seat (not a floor)
+                            .find(|i| floor_plan.plan[*i] != Position::Floor)
+                    })
+                    .collect(),
+            )
+        })
+        .collect()
 }
 
 #[cfg(test)]
@@ -357,11 +477,15 @@ L.LLLLL.LL";
     fn running_part1() {
         let input = parse_input(INPUT);
         assert_eq!(part1(&input), 37);
+
+        assert_eq!(part1_iter(&input), 37);
     }
 
     #[test]
     fn running_part2() {
         let input = parse_input(INPUT);
         assert_eq!(part2(&input), 26);
+
+        assert_eq!(part2_iter(&input), 26);
     }
 }
