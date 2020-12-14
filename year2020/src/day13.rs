@@ -20,35 +20,36 @@ fn parse_input(input: &str) -> (usize, Vec<(usize, usize)>) {
 #[aoc(day13, part1)]
 fn part1(notes: &(usize, Vec<(usize, usize)>)) -> usize {
     let (earliest, buses) = notes;
-    let (_, bus) = buses
+    let (bus, early) = buses
         .iter()
-        .min_by(|a, b| remainder_after(*earliest, a.1).cmp(&remainder_after(*earliest, b.1)))
+        .map(|(_, bus)| (*bus, *bus - *earliest % *bus))
+        .min_by(|a, b| a.1.cmp(&b.1))
         .unwrap();
-    bus * remainder_after(*earliest, *bus)
+    bus * early
 }
 
 #[aoc(day13, part2)]
 fn part2(notes: &(usize, Vec<(usize, usize)>)) -> usize {
-    let (_, buses) = notes;
-    let buses = buses
-        .iter()
-        .map(|(off, bus)| (simplify_mod(*bus as isize - *off as isize, *bus), *bus))
-        .collect();
-    chinese_remainder(buses)
+    chinese_remainder(
+        notes
+            .1
+            .iter()
+            .map(|(off, bus)| (simplify_mod(*bus as isize - *off as isize, *bus), *bus))
+            .collect(),
+    )
 }
 
 // Chinese remainder theorem
 // https://www.youtube.com/watch?v=zIFehsBHB8o
 fn chinese_remainder(mods: Vec<(usize, usize)>) -> usize {
     let prod: usize = mods.iter().map(|m| m.1).product();
-    let s: usize = mods
-        .iter()
+    mods.iter()
         .map(|m| {
             let p = prod / m.1;
             m.0 * p * mod_inv(p, m.1).unwrap()
         })
-        .sum();
-    s % prod
+        .sum::<usize>()
+        % prod
 }
 
 // https://brilliant.org/wiki/extended-euclidean-algorithm/
@@ -79,11 +80,6 @@ fn mod_inv(res: usize, m: usize) -> Option<usize> {
     } else {
         None
     }
-}
-
-// Calculator remainder after num has been "passed"
-fn remainder_after(after: usize, m: usize) -> usize {
-    m - after % m
 }
 
 fn simplify_mod(res: isize, m: usize) -> usize {
