@@ -2,6 +2,7 @@
 use std::collections::HashMap;
 
 use aoc_runner_derive::{aoc, aoc_generator};
+use bit::BitIndex;
 use nom::{
     branch::alt,
     bytes::complete::{tag, take},
@@ -23,15 +24,18 @@ struct Mask {
     inner: String,
     or: u64,
     and: u64,
+    floating: Vec<u64>,
 }
 
 impl Mask {
     fn new(s: String) -> Self {
         let (or, and) = mask_or_and(&s);
+        let floating = get_floating(&s);
         Mask {
             inner: s,
             or,
-            and
+            and,
+            floating,
         }
     }
 
@@ -46,10 +50,27 @@ impl Mask {
     // mask[i] == X floating (both 1 and 0)
     // Can apply the OR mask to tick of rule 1 and 2
     fn apply_v2(&self, value: u64) -> Vec<u64> {
-        let _amt = value | self.or; // doesn't change 0 and overwrites where 1
+        let orig = value | self.or; // doesn't change 0 and overwrites where 1
+        let mut addrs = Vec::new();
+        
+        // gives me all possible values from all 0s to all 1s for the floating mask
         // size = 2 ^ num of 'X's
-        Vec::new()
+        for i in 0..(2 as u64).pow(self.floating.len() as u32) {
+            let mut orig_copy = orig;
+            for (j, f) in self.floating.iter().enumerate() {
+                orig_copy.set_bit(*f as usize, i.bit(j));
+            }
+            addrs.push(orig_copy);
+        }
+        addrs
     }
+
+    
+}
+
+fn get_floating(mask: &str) -> Vec<u64> {
+    // mask is 36 characters long and I need LSB to be indexed at 0
+    mask.as_bytes().iter().enumerate().filter(|(_, c)| c == &&b'X').map(|(i , _)| 35 - i as u64).collect()
 }
 
 fn mask_or_and(mask: &str) -> (u64, u64) {
