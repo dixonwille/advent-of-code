@@ -19,7 +19,7 @@ enum Operation {
     WriteMem((u64, u64)),
 }
 
-#[derive(Debug,Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 struct Mask {
     inner: String,
     or: u64,
@@ -52,7 +52,7 @@ impl Mask {
     fn apply_v2(&self, value: u64) -> Vec<u64> {
         let orig = value | self.or; // doesn't change 0 and overwrites where 1
         let mut addrs = Vec::new();
-        
+
         // gives me all possible values from all 0s to all 1s for the floating mask
         // size = 2 ^ num of 'X's
         for i in 0..(2 as u64).pow(self.floating.len() as u32) {
@@ -64,13 +64,16 @@ impl Mask {
         }
         addrs
     }
-
-    
 }
 
 fn get_floating(mask: &str) -> Vec<u64> {
     // mask is 36 characters long and I need LSB to be indexed at 0
-    mask.as_bytes().iter().enumerate().filter(|(_, c)| c == &&b'X').map(|(i , _)| 35 - i as u64).collect()
+    mask.as_bytes()
+        .iter()
+        .enumerate()
+        .filter(|(_, c)| c == &&b'X')
+        .map(|(i, _)| 35 - i as u64)
+        .collect()
 }
 
 fn mask_or_and(mask: &str) -> (u64, u64) {
@@ -106,7 +109,9 @@ fn parse_input(input: &str) -> Vec<Operation> {
 }
 
 fn parse_mask(input: &str) -> IResult<&str, Operation> {
-    map(preceded(tag(" = "), take(36 as usize)),|s: &str| Operation::ChnageMask(Mask::new(s.to_owned())))(input)
+    map(preceded(tag(" = "), take(36 as usize)), |s: &str| {
+        Operation::ChnageMask(Mask::new(s.to_owned()))
+    })(input)
 }
 
 fn parse_mem(input: &str) -> IResult<&str, Operation> {
@@ -124,7 +129,7 @@ fn part1(data: &[Operation]) -> u64 {
     for op in data {
         match op {
             Operation::ChnageMask(m) => mask = m,
-            Operation::WriteMem((addr,amt)) => {
+            Operation::WriteMem((addr, amt)) => {
                 mem.insert(*addr, mask.apply_v1(*amt));
             }
         }
@@ -140,7 +145,7 @@ fn part2(data: &[Operation]) -> u64 {
     for op in data {
         match op {
             Operation::ChnageMask(m) => mask = m,
-            Operation::WriteMem((addr,amt)) => {
+            Operation::WriteMem((addr, amt)) => {
                 for a in mask.apply_v2(*addr) {
                     mem.insert(a, *amt);
                 }
@@ -169,7 +174,9 @@ mem[26] = 1";
         assert_eq!(
             parse_input(DATA),
             vec![
-                Operation::ChnageMask(Mask::new("XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X".to_string())),
+                Operation::ChnageMask(Mask::new(
+                    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X".to_string()
+                )),
                 Operation::WriteMem((8, 11)),
                 Operation::WriteMem((7, 101)),
                 Operation::WriteMem((8, 0))
@@ -179,7 +186,10 @@ mem[26] = 1";
 
     #[test]
     fn masking() {
-        assert_eq!(mask_or_and("XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X"), (64, 68719476733))
+        assert_eq!(
+            mask_or_and("XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X"),
+            (64, 68719476733)
+        )
     }
 
     #[test]

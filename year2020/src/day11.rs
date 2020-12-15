@@ -305,14 +305,17 @@ fn part1_iter(floor_plan: &FloorPlan) -> usize {
 
     loop {
         for (i, visible) in &neighbors {
-            let occup = visible.iter().filter(|o| prev.plan[**o] == Position::Occupied).count();
+            let occup = visible
+                .iter()
+                .filter(|o| prev.plan[**o] == Position::Occupied)
+                .count();
             let (cur_seat, prev_seat) = (&mut cur.plan[*i], &prev.plan[*i]);
 
             if prev_seat == &Position::Empty && occup == 0 {
                 *cur_seat = Position::Occupied;
-            }else if prev_seat == &Position::Occupied && occup >= 4 {
+            } else if prev_seat == &Position::Occupied && occup >= 4 {
                 *cur_seat = Position::Empty;
-            }else {
+            } else {
                 *cur_seat = prev_seat.clone()
             }
         }
@@ -323,7 +326,10 @@ fn part1_iter(floor_plan: &FloorPlan) -> usize {
             break;
         }
     }
-    cur.plan.iter().filter(|p| p == &&Position::Occupied).count()
+    cur.plan
+        .iter()
+        .filter(|p| p == &&Position::Occupied)
+        .count()
 }
 
 #[aoc(day11, part2, mine)]
@@ -351,14 +357,17 @@ fn part2_iter(floor_plan: &FloorPlan) -> usize {
 
     loop {
         for (i, visible) in &aof {
-            let occup = visible.iter().filter(|o| prev.plan[**o] == Position::Occupied).count();
+            let occup = visible
+                .iter()
+                .filter(|o| prev.plan[**o] == Position::Occupied)
+                .count();
             let (cur_seat, prev_seat) = (&mut cur.plan[*i], &prev.plan[*i]);
 
             if prev_seat == &Position::Empty && occup == 0 {
                 *cur_seat = Position::Occupied;
-            }else if prev_seat == &Position::Occupied && occup >= 5 {
+            } else if prev_seat == &Position::Occupied && occup >= 5 {
                 *cur_seat = Position::Empty;
-            }else {
+            } else {
                 *cur_seat = prev_seat.clone()
             }
         }
@@ -369,7 +378,10 @@ fn part2_iter(floor_plan: &FloorPlan) -> usize {
             break;
         }
     }
-    cur.plan.iter().filter(|p| p == &&Position::Occupied).count()
+    cur.plan
+        .iter()
+        .filter(|p| p == &&Position::Occupied)
+        .count()
 }
 
 fn get_neighbors(floor_plan: &FloorPlan) -> Vec<(usize, Vec<usize>)> {
@@ -384,9 +396,19 @@ fn get_neighbors(floor_plan: &FloorPlan) -> Vec<(usize, Vec<usize>)> {
                 (0..9)
                     .filter(|p| p != &4) // exclude middle
                     // generate x and y neighbors for i
-                    .map(|p| ((i % floor_plan.cols) as isize + p as isize % 3 - 1, (i / floor_plan.cols) as isize + p as isize / 3 - 1))
+                    .map(|p| {
+                        (
+                            (i % floor_plan.cols) as isize + p as isize % 3 - 1,
+                            (i / floor_plan.cols) as isize + p as isize / 3 - 1,
+                        )
+                    })
                     // make sure we don't breach boundaries
-                    .filter(|(x, y)| *x >= 0 && *y >= 0 && *x < floor_plan.cols as isize && *y < floor_plan.rows as isize)
+                    .filter(|(x, y)| {
+                        *x >= 0
+                            && *y >= 0
+                            && *x < floor_plan.cols as isize
+                            && *y < floor_plan.rows as isize
+                    })
                     // turn back into an index on array
                     .map(|(x, y)| (y * floor_plan.cols as isize + x) as usize)
                     // Only want neighbors that are seats (not a floor)
@@ -409,7 +431,7 @@ fn get_aof(floor_plan: &FloorPlan) -> Vec<(usize, Vec<usize>)> {
                 (0..9)
                     .filter(|p| p != &4) // exclude middle
                     // generate relative x and y to i for neighbors
-                    .map(|p| (p as isize % 3 - 1, p as isize / 3 - 1)) 
+                    .map(|p| (p as isize % 3 - 1, p as isize / 3 - 1))
                     .filter_map(|(rx, ry)| {
                         (1..)
                             // get x and y from index and apply offsets with multiples (f) for scanning out
@@ -421,7 +443,10 @@ fn get_aof(floor_plan: &FloorPlan) -> Vec<(usize, Vec<usize>)> {
                             })
                             // Make sure we don't breach boundaries
                             .take_while(|(x, y)| {
-                                *x >= 0 && *y >= 0 && *x < floor_plan.cols as isize && *y < floor_plan.rows as isize
+                                *x >= 0
+                                    && *y >= 0
+                                    && *x < floor_plan.cols as isize
+                                    && *y < floor_plan.rows as isize
                             })
                             // Turn the x and y into an index
                             .map(|(x, y)| (y * floor_plan.cols as isize + x) as usize)
