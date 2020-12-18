@@ -14,7 +14,7 @@ use nom::{
     IResult,
 };
 
-type Validations = HashMap<String, [Range<usize>; 2]>;
+type Validations = HashMap<String, (Range<usize>, Range<usize>)>;
 type Ticket = Vec<usize>;
 
 #[aoc_generator(day16)]
@@ -39,7 +39,7 @@ fn parse_range(input: &str) -> IResult<&str, Range<usize>> {
     })(input)
 }
 
-fn parse_validations(input: &str) -> IResult<&str, HashMap<String, [Range<usize>; 2]>> {
+fn parse_validations(input: &str) -> IResult<&str, Validations> {
     let (input, out) = separated_list1(
         tag("\n"),
         map(
@@ -48,7 +48,7 @@ fn parse_validations(input: &str) -> IResult<&str, HashMap<String, [Range<usize>
                 tag(": "),
                 separated_pair(parse_range, tag(" or "), parse_range),
             ),
-            |(s, (st, nd))| (s.to_owned(), [st, nd]),
+            |(s, (st, nd))| (s.to_owned(), (st, nd)),
         ),
     )(input)?;
     Ok((input, out.into_iter().collect()))
@@ -62,12 +62,11 @@ fn parse_ticket(input: &str) -> IResult<&str, Vec<usize>> {
     Ok((input, out))
 }
 
-fn consolidate_ranges(ranges: Vec<Range<usize>>) -> Vec<Range<usize>> {
-    let mut ranges = ranges;
+fn consolidate_ranges(ranges: &mut Vec<Range<usize>>) {
     loop {
         let mut consolidated = Vec::new();
         if ranges.is_empty() {
-            return consolidated;
+            return;
         }
         consolidated.push(ranges[0].clone());
 
@@ -85,35 +84,30 @@ fn consolidate_ranges(ranges: Vec<Range<usize>>) -> Vec<Range<usize>> {
             consolidated.push(range.clone());
         }
         if consolidated.len() == ranges.len() {
-            break consolidated;
+            break;
         }
-        ranges = consolidated;
+        *ranges = consolidated;
     }
 }
 
-fn filter_tickets(validations: &Validations, nearby: &[Ticket]) -> Vec<Ticket> {
-    let mut ranges = Vec::new();
-    validations
+fn filter_tickets<'a>(validations: &Validations, nearby: &'a [Ticket]) -> Vec<&'a Ticket> {
+    let mut ranges = validations
         .iter()
-        .for_each(|(_, validations)| validations.iter().for_each(|v| ranges.push(v.clone())));
-    let valid_ranges = consolidate_ranges(ranges);
-    let mut valid = Vec::new();
-    'ticket: for ticket in nearby {
-        'field: for field in ticket {
-            for v in &valid_ranges {
-                if v.contains(field) {
-                    continue 'field;
-                }
-            }
-            // field is invalid so I know the ticket is invalid
-            continue 'ticket;
-        }
-        valid.push(ticket.clone());
-    }
-    valid
+        .map(|(_, rules)| vec![rules.0.clone(), rules.1.clone()])
+        .flatten()
+        .collect();
+    consolidate_ranges(&mut ranges);
+    nearby
+        .iter()
+        .filter(|fields| {
+            fields
+                .iter()
+                .all(|field| ranges.iter().any(|r| r.contains(field)))
+        })
+        .collect()
 }
 
-fn flip_vec(vectors: Vec<Ticket>) -> Vec<Vec<usize>> {
+fn flip_vec(vectors: Vec<&Ticket>) -> Vec<Vec<usize>> {
     let num_tickets = vectors.len();
     let num_fields = vectors[0].len();
     let mut flipped = Vec::with_capacity(num_fields);
@@ -121,8 +115,8 @@ fn flip_vec(vectors: Vec<Ticket>) -> Vec<Vec<usize>> {
         flipped.push(Vec::with_capacity(num_tickets));
     }
     for vector in vectors {
-        for (i, field) in vector.into_iter().enumerate() {
-            flipped[i].push(field);
+        for (i, field) in vector.iter().enumerate() {
+            flipped[i].push(*field);
         }
     }
     flipped
@@ -159,23 +153,22 @@ fn clean_findings(findings: &mut HashMap<String, Vec<usize>>) {
 
 #[aoc(day16, part1)]
 fn part1((validations, _, nearby): &(Validations, Ticket, Vec<Ticket>)) -> usize {
-    let mut ranges = Vec::new();
-    validations
+    let mut ranges = validations
         .iter()
-        .for_each(|(_, validations)| validations.iter().for_each(|v| ranges.push(v.clone())));
-    let valid = consolidate_ranges(ranges);
-    let mut invalid = Vec::new();
-    for ticket in nearby {
-        'field: for field in ticket {
-            for v in &valid {
-                if v.contains(field) {
-                    continue 'field;
-                }
-            }
-            invalid.push(*field)
-        }
-    }
-    invalid.iter().sum()
+        .map(|(_, rules)| vec![rules.0.clone(), rules.1.clone()])
+        .flatten()
+        .collect();
+    consolidate_ranges(&mut ranges);
+    nearby
+        .iter()
+        .map::<Vec<_>, _>(|fields| {
+            fields
+                .iter()
+                .filter(|field| !ranges.iter().any(|r| r.contains(field)))
+                .collect()
+        })
+        .flatten()
+        .sum()
 }
 
 #[aoc(day16, part2)]
@@ -184,18 +177,13 @@ fn part2((validations, own, nearby): &(Validations, Ticket, Vec<Ticket>)) -> usi
     // figure out which fields are valid with which validation
     let mut defs: HashMap<String, Vec<usize>> = HashMap::new();
     for (i, field) in fields.into_iter().enumerate() {
-        'validations: for (key, ranges) in validations {
-            'f: for f in &field {
-                for range in ranges {
-                    if range.contains(&f) {
-                        continue 'f;
-                    }
-                }
-                // Field is invalid for this key
-                continue 'validations;
+        for (key, rules) in validations {
+            if field
+                .iter()
+                .all(|f| rules.0.contains(&f) || rules.1.contains(&f))
+            {
+                defs.entry(key.to_string()).or_insert_with(Vec::new).push(i);
             }
-            // Field is valid for this key
-            defs.entry(key.to_string()).or_insert_with(Vec::new).push(i);
         }
     }
     clean_findings(&mut defs);
@@ -227,15 +215,15 @@ nearby tickets:
         let mut map = HashMap::new();
         map.insert(
             "class".to_string(),
-            [Range { start: 1, end: 3 }, Range { start: 5, end: 7 }],
+            (Range { start: 1, end: 3 }, Range { start: 5, end: 7 }),
         );
         map.insert(
             "row".to_string(),
-            [Range { start: 6, end: 11 }, Range { start: 33, end: 44 }],
+            (Range { start: 6, end: 11 }, Range { start: 33, end: 44 }),
         );
         map.insert(
             "departure seat".to_string(),
-            [Range { start: 13, end: 40 }, Range { start: 45, end: 50 }],
+            (Range { start: 13, end: 40 }, Range { start: 45, end: 50 }),
         );
         assert_eq!(
             parse_input(NOTES),
