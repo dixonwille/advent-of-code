@@ -1,4 +1,4 @@
-/// https://adventofcode.com/2020/day/15
+/// https://adventofcode.com/2020/day/16
 use std::{
     collections::{HashMap, HashSet},
     ops::Range,
@@ -93,8 +93,7 @@ fn consolidate_ranges(ranges: &mut Vec<Range<usize>>) {
 fn filter_tickets<'a>(validations: &Validations, nearby: &'a [Ticket]) -> Vec<&'a Ticket> {
     let mut ranges = validations
         .iter()
-        .map(|(_, rules)| vec![rules.0.clone(), rules.1.clone()])
-        .flatten()
+        .flat_map(|(_, rules)| vec![rules.0.clone(), rules.1.clone()])
         .collect();
     consolidate_ranges(&mut ranges);
     nearby
@@ -155,8 +154,7 @@ fn clean_findings(findings: &mut HashMap<String, Vec<usize>>) {
 fn part1((validations, _, nearby): &(Validations, Ticket, Vec<Ticket>)) -> usize {
     let mut ranges = validations
         .iter()
-        .map(|(_, rules)| vec![rules.0.clone(), rules.1.clone()])
-        .flatten()
+        .flat_map(|(_, rules)| vec![rules.0.clone(), rules.1.clone()])
         .collect();
     consolidate_ranges(&mut ranges);
     nearby
