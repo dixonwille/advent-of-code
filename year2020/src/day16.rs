@@ -1,6 +1,9 @@
-use std::{collections::HashMap, ops::Range};
-
 /// https://adventofcode.com/2020/day/15
+use std::{
+    collections::{HashMap, HashSet},
+    ops::Range,
+};
+
 use aoc_runner_derive::{aoc, aoc_generator};
 use nom::{
     bytes::complete::{tag, take_till},
@@ -90,26 +93,76 @@ fn consolidate_ranges(ranges: Vec<Range<usize>>) -> Vec<Range<usize>> {
 
 fn filter_tickets(validations: &Validations, nearby: &[Ticket]) -> Vec<Ticket> {
     let mut ranges = Vec::new();
-    validations.iter().for_each(|(_, validations)| validations.iter().for_each(|v| ranges.push(v.clone())));
+    validations
+        .iter()
+        .for_each(|(_, validations)| validations.iter().for_each(|v| ranges.push(v.clone())));
     let valid_ranges = consolidate_ranges(ranges);
     let mut valid = Vec::new();
-    'ticket: for ticket in nearby{
-        for field in ticket {
+    'ticket: for ticket in nearby {
+        'field: for field in ticket {
             for v in &valid_ranges {
-                if !v.contains(field) {
-                    continue 'ticket;
+                if v.contains(field) {
+                    continue 'field;
                 }
             }
+            // field is invalid so I know the ticket is invalid
+            continue 'ticket;
         }
         valid.push(ticket.clone());
     }
     valid
 }
 
+fn flip_vec(vectors: Vec<Ticket>) -> Vec<Vec<usize>> {
+    let num_tickets = vectors.len();
+    let num_fields = vectors[0].len();
+    let mut flipped = Vec::with_capacity(num_fields);
+    for _ in 0..num_fields {
+        flipped.push(Vec::with_capacity(num_tickets));
+    }
+    for vector in vectors {
+        for (i, field) in vector.into_iter().enumerate() {
+            flipped[i].push(field);
+        }
+    }
+    flipped
+}
+
+fn clean_findings(findings: &mut HashMap<String, Vec<usize>>) {
+    let mut eliminated = HashSet::new();
+
+    loop {
+        let mut eliminate = HashSet::new();
+        // find what I can eliminate
+        for (_, find) in findings.iter() {
+            if find.len() == 1 && !eliminated.contains(&find[0]) {
+                eliminate.insert(find[0]);
+            }
+        }
+
+        if eliminate.is_empty() {
+            break;
+        }
+
+        // remove eliminatable elements from map
+        for elim in eliminate.iter() {
+            for (_, find) in findings.iter_mut() {
+                if find.len() == 1 {
+                    continue;
+                }
+                *find = find.clone().into_iter().filter(|f| f != elim).collect();
+            }
+            eliminated.insert(*elim);
+        }
+    }
+}
+
 #[aoc(day16, part1)]
 fn part1((validations, _, nearby): &(Validations, Ticket, Vec<Ticket>)) -> usize {
     let mut ranges = Vec::new();
-    validations.iter().for_each(|(_, validations)| validations.iter().for_each(|v| ranges.push(v.clone())));
+    validations
+        .iter()
+        .for_each(|(_, validations)| validations.iter().for_each(|v| ranges.push(v.clone())));
     let valid = consolidate_ranges(ranges);
     let mut invalid = Vec::new();
     for ticket in nearby {
@@ -126,13 +179,30 @@ fn part1((validations, _, nearby): &(Validations, Ticket, Vec<Ticket>)) -> usize
 }
 
 #[aoc(day16, part2)]
-fn part2((validations, _own, nearby): &(Validations, Ticket, Vec<Ticket>)) -> usize {
-    let valid = filter_tickets(validations, nearby);
-    // turn flip the vectors so that each column is in it's own Vec
-    // so VecSizeM of VecSizeN becomes VecSizeN of VecSizeN
-    // go through each column set and find the valid fields for that column
-    // should be able to use process of elimination from here
-    0
+fn part2((validations, own, nearby): &(Validations, Ticket, Vec<Ticket>)) -> usize {
+    let fields = flip_vec(filter_tickets(validations, nearby));
+    // figure out which fields are valid with which validation
+    let mut defs: HashMap<String, Vec<usize>> = HashMap::new();
+    for (i, field) in fields.into_iter().enumerate() {
+        'validations: for (key, ranges) in validations {
+            'f: for f in &field {
+                for range in ranges {
+                    if range.contains(&f) {
+                        continue 'f;
+                    }
+                }
+                // Field is invalid for this key
+                continue 'validations;
+            }
+            // Field is valid for this key
+            defs.entry(key.to_string()).or_insert_with(Vec::new).push(i);
+        }
+    }
+    clean_findings(&mut defs);
+    defs.iter()
+        .filter(|(key, _)| key.starts_with("departure"))
+        .map(|(_, find)| own[find[0]])
+        .product()
 }
 
 #[cfg(test)]
