@@ -5,6 +5,10 @@ use aoc_runner_derive::aoc_lib;
 // TODO may make sense to write some macros or build.rs to help maintain boiler plate
 // TODO support workspaces so that I have all the years in one workspace but CLI can run specific year/day/part
 
+extern crate pest;
+#[macro_use]
+extern crate pest_derive;
+
 pub mod day01;
 pub mod day02;
 pub mod day03;
@@ -23,5 +27,6 @@ pub mod day15;
 pub mod day16;
 pub mod day17;
 pub mod day18;
+pub mod day19;
 
 aoc_lib!(year = 2020);

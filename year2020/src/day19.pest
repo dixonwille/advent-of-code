@@ -1,0 +1,13 @@
+num = @{ "0" | ASCII_NONZERO_DIGIT ~ ASCII_DIGIT* }
+char = { "a" | "b" }
+string = ${ "\"" ~ char ~ "\"" }
+grouping = { num+ }
+rule = { 
+    num ~ ":" ~ (
+        string 
+        | (grouping ~ ("|" ~ grouping)*)
+    ) 
+}
+message = @{ char+ }
+file = _{ SOI ~ (rule ~ NEWLINE)+ ~ NEWLINE ~ (message ~ NEWLINE)+ ~ EOI }
+WHITESPACE = _{ " " }
