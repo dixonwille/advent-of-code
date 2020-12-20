@@ -213,15 +213,15 @@ nearby tickets:
         let mut map = HashMap::new();
         map.insert(
             "class".to_string(),
-            (Range { start: 1, end: 3 }, Range { start: 5, end: 7 }),
+            (Range { start: 1, end: 4 }, Range { start: 5, end: 8 }),
         );
         map.insert(
             "row".to_string(),
-            (Range { start: 6, end: 11 }, Range { start: 33, end: 44 }),
+            (Range { start: 6, end: 12 }, Range { start: 33, end: 45 }),
         );
         map.insert(
             "departure seat".to_string(),
-            (Range { start: 13, end: 40 }, Range { start: 45, end: 50 }),
+            (Range { start: 13, end: 41 }, Range { start: 45, end: 51 }),
         );
         assert_eq!(
             parse_input(NOTES),
