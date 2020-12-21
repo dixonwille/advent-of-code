@@ -1,0 +1,6 @@
+word = @{ ASCII_ALPHA+  }
+allergens = { "(contains" ~ word ~ ("," ~ word)* ~ ")" }
+ingredients = { word+ }
+listing = { ingredients ~ allergens }
+file = _{ SOI ~ (listing ~ NEWLINE?)+ ~ EOI }
+WHITESPACE = _{ " " }
