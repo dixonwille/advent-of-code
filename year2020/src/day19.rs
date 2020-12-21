@@ -9,7 +9,7 @@ use std::collections::{HashMap, HashSet};
 
 #[derive(Parser)]
 #[grammar = "day19.pest"]
-pub struct InputParser;
+struct InputParser;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 enum RuleDef<T, V> {

@@ -1,0 +1,7 @@
+id = @{ "0" | ASCII_NONZERO_DIGIT ~  ASCII_DIGIT+ }
+header = { "Tile" ~ id ~ ":" }
+cell = { "#" | "." }
+row = ${ cell+ }
+tile = { header ~ NEWLINE ~ (row ~ NEWLINE?)+ }
+file = _{ SOI ~ (tile ~ NEWLINE?)+ ~ EOI }
+WHITESPACE = _{ " " }
