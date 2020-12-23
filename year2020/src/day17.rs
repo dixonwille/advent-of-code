@@ -2,7 +2,10 @@
 use aoc_runner_derive::{aoc, aoc_generator};
 use once_cell::sync::Lazy;
 
-use std::{collections::{HashMap, HashSet}, hash::Hash};
+use std::{
+    collections::{HashMap, HashSet},
+    hash::Hash,
+};
 
 #[aoc_generator(day17)]
 fn parse_input(input: &str) -> HashSet<(i32, i32, i32)> {
@@ -55,7 +58,9 @@ fn neighbors4d() -> Vec<(i32, i32, i32, i32)> {
         .collect()
 }
 
-fn count_neighbors4d(active: &HashSet<(i32, i32, i32, i32)>) -> HashMap<(i32, i32, i32, i32), usize> {
+fn count_neighbors4d(
+    active: &HashSet<(i32, i32, i32, i32)>,
+) -> HashMap<(i32, i32, i32, i32), usize> {
     let mut neig = HashMap::new();
     for (x, y, z, a) in active {
         for (dx, dy, dz, da) in Lazy::force(&NEIGHBORS4D) {
@@ -65,9 +70,10 @@ fn count_neighbors4d(active: &HashSet<(i32, i32, i32, i32)>) -> HashMap<(i32, i3
     neig
 }
 
-fn simulate<P, F>(mut active: HashSet<P>, count_neighbors: F) -> usize where
+fn simulate<P, F>(mut active: HashSet<P>, count_neighbors: F) -> usize
+where
     P: Hash + Eq + Copy,
-    F: Fn(&HashSet<P>) -> HashMap<P, usize>
+    F: Fn(&HashSet<P>) -> HashMap<P, usize>,
 {
     for _ in 0..6 {
         active = count_neighbors(&active)
@@ -86,7 +92,11 @@ fn part1(init: &HashSet<(i32, i32, i32)>) -> usize {
 
 #[aoc(day17, part2)]
 fn part2(init: &HashSet<(i32, i32, i32)>) -> usize {
-    let init = init.clone().into_iter().map(|(x,y, z)| (x, y, z, 0)).collect();
+    let init = init
+        .clone()
+        .into_iter()
+        .map(|(x, y, z)| (x, y, z, 0))
+        .collect();
     simulate(init, count_neighbors4d)
 }
 

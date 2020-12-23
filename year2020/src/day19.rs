@@ -1,5 +1,4 @@
 /// https://adventofcode.com/2020/day/19
-
 // Things I would do differently
 // I would create a CYK package that included a way to specify a CFG that then cleaned it properly to CNF
 // The way it is done here, we parse and clean in a single map where as with the CYK package I would parse then add rules
@@ -63,13 +62,22 @@ fn clean_rules(rules: &mut HashMap<usize, RuleDef<String, usize>>) {
             RuleDef::Terminal(_) => {}
             RuleDef::And(and) => {
                 if and.len() > 2 {
-                    overwrite.push((*k, RuleDef::And(vec![and[0].clone(), Box::new(RuleDef::Variable(new_key))])));
+                    overwrite.push((
+                        *k,
+                        RuleDef::And(vec![and[0].clone(), Box::new(RuleDef::Variable(new_key))]),
+                    ));
                     new_key += 1;
-                    for a in and.iter().take(and.len()-2).skip(1) {
-                        overwrite.push((new_key-1, RuleDef::And(vec![a.clone(), Box::new(RuleDef::Variable(new_key))])));
-                        new_key +=1;
+                    for a in and.iter().take(and.len() - 2).skip(1) {
+                        overwrite.push((
+                            new_key - 1,
+                            RuleDef::And(vec![a.clone(), Box::new(RuleDef::Variable(new_key))]),
+                        ));
+                        new_key += 1;
                     }
-                    overwrite.push((new_key-1, RuleDef::And(vec![and[and.len()-2].clone(), and[and.len()-1].clone()])));
+                    overwrite.push((
+                        new_key - 1,
+                        RuleDef::And(vec![and[and.len() - 2].clone(), and[and.len() - 1].clone()]),
+                    ));
                 }
             }
             RuleDef::Variable(i) => overwrite.push((*k, rules.get(&i).unwrap().clone())),
@@ -78,9 +86,7 @@ fn clean_rules(rules: &mut HashMap<usize, RuleDef<String, usize>>) {
                 let mut ow = Vec::new();
                 for inner in inner_rules.iter() {
                     match &**inner {
-                        RuleDef::Terminal(_) => {
-                            ow.push((*inner).clone())
-                        }
+                        RuleDef::Terminal(_) => ow.push((*inner).clone()),
                         RuleDef::Or(or) => {
                             for o in or {
                                 ow.push((*o).clone());
@@ -88,14 +94,29 @@ fn clean_rules(rules: &mut HashMap<usize, RuleDef<String, usize>>) {
                         }
                         RuleDef::And(and) => {
                             if and.len() > 2 {
-                                ow.push(Box::new(RuleDef::And(vec![and[0].clone(), Box::new(RuleDef::Variable(new_key))])));
+                                ow.push(Box::new(RuleDef::And(vec![
+                                    and[0].clone(),
+                                    Box::new(RuleDef::Variable(new_key)),
+                                ])));
                                 new_key += 1;
-                                for a in and.iter().take(and.len()-2).skip(1) {
-                                    overwrite.push((new_key-1, RuleDef::And(vec![a.clone(), Box::new(RuleDef::Variable(new_key))])));
-                                    new_key +=1;
+                                for a in and.iter().take(and.len() - 2).skip(1) {
+                                    overwrite.push((
+                                        new_key - 1,
+                                        RuleDef::And(vec![
+                                            a.clone(),
+                                            Box::new(RuleDef::Variable(new_key)),
+                                        ]),
+                                    ));
+                                    new_key += 1;
                                 }
-                                overwrite.push((new_key-1, RuleDef::And(vec![and[and.len()-2].clone(), and[and.len()-1].clone()])));
-                            }else {
+                                overwrite.push((
+                                    new_key - 1,
+                                    RuleDef::And(vec![
+                                        and[and.len() - 2].clone(),
+                                        and[and.len() - 1].clone(),
+                                    ]),
+                                ));
+                            } else {
                                 ow.push((*inner).clone());
                             }
                         }
@@ -150,10 +171,7 @@ type TermMap = HashMap<String, Vec<usize>>;
 // Doing this for faster lookups over a set of messages
 // returns the mapping of rules and terminals
 // this should be recursive or cleaned up so copy code in loops isn't needed
-fn cnf_rules(
-    rules: &HashMap<usize, RuleDef<String, usize>>,
-) -> (RuleMap, TermMap) {
-
+fn cnf_rules(rules: &HashMap<usize, RuleDef<String, usize>>) -> (RuleMap, TermMap) {
     let mut rule_map = HashMap::new();
     let mut term_map = HashMap::new();
     for rule in rules {
@@ -162,7 +180,11 @@ fn cnf_rules(
     (rule_map, term_map)
 }
 
-fn cnf_rules_recurs((rule_id, rule): (&usize, &RuleDef<String, usize>),  rule_map: &mut RuleMap, term_map: &mut TermMap) {
+fn cnf_rules_recurs(
+    (rule_id, rule): (&usize, &RuleDef<String, usize>),
+    rule_map: &mut RuleMap,
+    term_map: &mut TermMap,
+) {
     match rule {
         RuleDef::Terminal(t) => {
             let e = term_map.entry(t.to_owned()).or_insert_with(Vec::new);
@@ -198,10 +220,7 @@ fn vec_multiple<'grammer>(a: &'grammer [usize], b: &'grammer [usize]) -> Vec<Vec
     out
 }
 
-fn can_cyk_parse(
-    (rule_map, term_map): &(RuleMap, TermMap),
-    input: &str,
-) -> bool {
+fn can_cyk_parse((rule_map, term_map): &(RuleMap, TermMap), input: &str) -> bool {
     let mut matrix = Vec::new();
     // start off by pushing the terminals of the string into the matrix
     matrix.push(
@@ -239,7 +258,7 @@ fn can_cyk_parse(
         }
         matrix.push(row);
     }
-    matrix[matrix.len()-1][0].contains(&0)
+    matrix[matrix.len() - 1][0].contains(&0)
 }
 
 #[aoc(day19, part1)]

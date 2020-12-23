@@ -1,8 +1,7 @@
-use std::collections::{HashMap, HashSet};
-
 /// https://adventofcode.com/2020/day/21
 use aoc_runner_derive::{aoc, aoc_generator};
 use pest::Parser;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Parser)]
 #[grammar = "day21.pest"]
@@ -69,7 +68,7 @@ fn clean_allergens(allergens: &mut HashMap<String, HashSet<String>>) {
         for (_, ings) in allergens.iter() {
             if ings.len() == 1 {
                 let ing = ings.iter().next().unwrap();
-                if !removed.contains(ing){
+                if !removed.contains(ing) {
                     to_remove.insert(ing.to_owned());
                 }
             }
@@ -87,7 +86,7 @@ fn clean_allergens(allergens: &mut HashMap<String, HashSet<String>>) {
                 ings.remove(r);
             }
             removed.insert(r.to_owned());
-        }        
+        }
     }
 }
 
@@ -95,9 +94,16 @@ fn clean_allergens(allergens: &mut HashMap<String, HashSet<String>>) {
 fn part2(listing: &[(HashSet<String>, HashSet<String>)]) -> String {
     let (_, mut allergens) = clean_input(listing);
     clean_allergens(&mut allergens);
-    let mut allergens = allergens.into_iter().map(|(k, v)| (k, v)).collect::<Vec<_>>();
+    let mut allergens = allergens
+        .into_iter()
+        .map(|(k, v)| (k, v))
+        .collect::<Vec<_>>();
     allergens.sort_by(|(a, _), (b, _)| a.cmp(b));
-    allergens.into_iter().map(|(_, v)| v.into_iter().next().unwrap()).collect::<Vec<_>>().join(",")
+    allergens
+        .into_iter()
+        .map(|(_, v)| v.into_iter().next().unwrap())
+        .collect::<Vec<_>>()
+        .join(",")
 }
 
 #[cfg(test)]
@@ -132,7 +138,10 @@ sqjhc mxmxvkd sbzzf (contains fish)";
     #[ignore = "this is actually running the code not the test"]
     fn running() {
         let mut input = String::new();
-        File::open("input/2020/day21.txt").unwrap().read_to_string(&mut input).unwrap();
+        File::open("input/2020/day21.txt")
+            .unwrap()
+            .read_to_string(&mut input)
+            .unwrap();
         let listing = parse_input(input.as_str());
         println!("{}", part2(&listing));
     }

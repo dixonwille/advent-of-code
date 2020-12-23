@@ -1,0 +1,4 @@
+num = @{ "0" | ASCII_NONZERO_DIGIT ~  ASCII_DIGIT* }
+player = { "Player" ~ ASCII_NONZERO_DIGIT ~ ":" ~ NEWLINE ~ (num ~ NEWLINE?)+ }
+file = _{ SOI ~ player ~ NEWLINE ~ player ~ EOI}
+WHITESPACE = _{ " " }
