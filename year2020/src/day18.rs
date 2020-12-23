@@ -1,7 +1,6 @@
 /// https://adventofcode.com/2020/day/18
 use std::fmt;
 
-use aoc_runner_derive::{aoc, aoc_generator};
 use nom::{
     branch::alt,
     character::complete::{char as c, digit1, multispace0, one_of},

@@ -1,5 +1,4 @@
 /// https://adventofcode.com/2020/day/5
-use aoc_runner_derive::{aoc, aoc_generator};
 use nom::{
     branch::alt,
     character::complete::{char as c, newline},

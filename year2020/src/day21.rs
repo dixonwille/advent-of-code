@@ -1,5 +1,4 @@
 /// https://adventofcode.com/2020/day/21
-use aoc_runner_derive::{aoc, aoc_generator};
 use pest::Parser;
 use std::collections::{HashMap, HashSet};
 

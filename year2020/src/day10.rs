@@ -1,8 +1,6 @@
 /// https://adventofcode.com/2020/day/10
 use std::collections::HashMap;
 
-use aoc_runner_derive::{aoc, aoc_generator};
-
 #[aoc_generator(day10)]
 fn parse_input(input: &str) -> Vec<usize> {
     let mut out: Vec<usize> = input.lines().map(|l| l.parse().unwrap()).collect();

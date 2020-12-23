@@ -1,5 +1,4 @@
 /// https://adventofcode.com/2020/day/3
-use aoc_runner_derive::{aoc, aoc_generator};
 use nom::{
     character::complete::{line_ending, one_of},
     combinator::{all_consuming, map},

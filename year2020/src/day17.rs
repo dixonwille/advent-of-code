@@ -1,5 +1,4 @@
 /// https://adventofcode.com/2020/day/17
-use aoc_runner_derive::{aoc, aoc_generator};
 use once_cell::sync::Lazy;
 
 use std::{

@@ -1,7 +1,6 @@
 /// https://adventofcode.com/2020/day/2
 use std::ops::Deref;
 
-use aoc_runner_derive::{aoc, aoc_generator};
 use nom::{
     bytes::complete::tag,
     character::complete::{alpha1, anychar, char as c, digit1, line_ending},

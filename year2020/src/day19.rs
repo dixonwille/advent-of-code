@@ -2,7 +2,6 @@
 // Things I would do differently
 // I would create a CYK package that included a way to specify a CFG that then cleaned it properly to CNF
 // The way it is done here, we parse and clean in a single map where as with the CYK package I would parse then add rules
-use aoc_runner_derive::{aoc, aoc_generator};
 use pest::{iterators::Pair, Parser};
 use std::collections::{HashMap, HashSet};
 

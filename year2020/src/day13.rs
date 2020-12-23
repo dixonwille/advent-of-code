@@ -1,5 +1,4 @@
 /// https://adventofcode.com/2020/day/13
-use aoc_runner_derive::{aoc, aoc_generator};
 
 #[aoc_generator(day13)]
 fn parse_input(input: &str) -> (usize, Vec<(usize, usize)>) {

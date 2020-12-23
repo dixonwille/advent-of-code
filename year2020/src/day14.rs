@@ -1,7 +1,6 @@
 /// https://adventofcode.com/2020/day/14
 use std::collections::HashMap;
 
-use aoc_runner_derive::{aoc, aoc_generator};
 use bit::BitIndex;
 use nom::{
     branch::alt,

@@ -1,7 +1,6 @@
 /// https://adventofcode.com/2020/day/6
 use std::collections::HashSet;
 
-use aoc_runner_derive::{aoc, aoc_generator};
 use nom::{
     character::complete::{alpha1, newline},
     combinator::all_consuming,

@@ -1,7 +1,6 @@
 /// https://adventofcode.com/2020/day/7
 use std::collections::{HashMap, HashSet};
 
-use aoc_runner_derive::{aoc, aoc_generator};
 use nom::{
     branch::alt,
     bytes::complete::tag,

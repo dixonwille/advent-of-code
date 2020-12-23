@@ -4,7 +4,6 @@ use std::{
     ops::Range,
 };
 
-use aoc_runner_derive::{aoc, aoc_generator};
 use nom::{
     bytes::complete::{tag, take_till},
     character::complete::digit1,
