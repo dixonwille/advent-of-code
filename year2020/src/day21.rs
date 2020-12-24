@@ -3,10 +3,10 @@ use pest::Parser;
 use std::collections::{HashMap, HashSet};
 
 #[derive(Parser)]
-#[grammar = "day21.pest"]
+#[grammar = "pest/day21.pest"]
 struct InputParser;
 
-#[aoc_generator(day21, part1)]
+#[aoc_generator(day21)]
 fn parse_input(input: &str) -> Vec<(HashSet<String>, HashSet<String>)> {
     InputParser::parse(Rule::file, input)
         .expect("unable to parse input")

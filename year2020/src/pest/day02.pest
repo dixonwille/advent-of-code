@@ -1,0 +1,6 @@
+num = @{ "0" | ASCII_NONZERO_DIGIT ~ ASCII_DIGIT* }
+character = { ASCII_ALPHA }
+password = @{ ASCII_ALPHA+ }
+validation = { num ~ "-" ~ num ~ character ~ ":" ~ password}
+file = _{ SOI ~ (validation ~ NEWLINE?)+ ~ EOI }
+WHITESPACE = _{ " " }

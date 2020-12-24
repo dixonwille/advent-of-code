@@ -6,7 +6,7 @@ use pest::{iterators::Pair, Parser};
 use std::collections::{HashMap, HashSet};
 
 #[derive(Parser)]
-#[grammar = "day19.pest"]
+#[grammar = "pest/day19.pest"]
 struct InputParser;
 
 #[derive(Debug, PartialEq, Eq, Clone)]

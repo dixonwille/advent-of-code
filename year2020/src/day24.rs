@@ -1,16 +1,18 @@
-use once_cell::sync::Lazy;
 /// https://adventofcode.com/2020/day/24
+use once_cell::sync::Lazy;
 use pest::Parser;
 use std::{collections::HashMap, str::FromStr};
 
-static NEIGHBORS: Lazy<Vec<Pos>> = Lazy::new(|| vec![
-    Direction::NorthEast.get_delta(),
-    Direction::NorthWest.get_delta(),
-    Direction::SouthEast.get_delta(),
-    Direction::SouthWest.get_delta(),
-    Direction::East.get_delta(),
-    Direction::West.get_delta(),
-]);
+static NEIGHBORS: Lazy<Vec<Pos>> = Lazy::new(|| {
+    vec![
+        Direction::NorthEast.get_delta(),
+        Direction::NorthWest.get_delta(),
+        Direction::SouthEast.get_delta(),
+        Direction::SouthWest.get_delta(),
+        Direction::East.get_delta(),
+        Direction::West.get_delta(),
+    ]
+});
 
 #[derive(Debug)]
 enum Direction {
@@ -24,13 +26,13 @@ enum Direction {
 
 impl Direction {
     fn get_delta(&self) -> Pos {
-        match self{
-            Direction::NorthEast => Pos(1,0,-1),
-            Direction::NorthWest => Pos(0,1,-1),
-            Direction::SouthEast => Pos(0,-1,1),
-            Direction::SouthWest => Pos(-1,0,1),
-            Direction::East => Pos(1,-1,0),
-            Direction::West => Pos(-1,1,0),
+        match self {
+            Direction::NorthEast => Pos(1, 0, -1),
+            Direction::NorthWest => Pos(0, 1, -1),
+            Direction::SouthEast => Pos(0, -1, 1),
+            Direction::SouthWest => Pos(-1, 0, 1),
+            Direction::East => Pos(1, -1, 0),
+            Direction::West => Pos(-1, 1, 0),
         }
     }
 }
@@ -98,7 +100,7 @@ impl Default for Pos {
 }
 
 #[derive(Parser)]
-#[grammar = "day24.pest"]
+#[grammar = "pest/day24.pest"]
 struct InputParser;
 
 fn build_floor(directions: &[Vec<Direction>]) -> HashMap<Pos, Color> {
@@ -128,7 +130,7 @@ fn conways_game(floor: &mut HashMap<Pos, Color>, iter: usize) {
                     new_floor.entry(p).or_insert_with(|| Color::Black).flip();
                 }
                 (Some(Color::White), t) if t == 2 => {
-                   new_floor.entry(p).or_insert_with(|| Color::White).flip();
+                    new_floor.entry(p).or_insert_with(|| Color::White).flip();
                 }
                 (None, t) if t == 2 => {
                     new_floor.entry(p).or_insert_with(|| Color::White).flip();
@@ -156,13 +158,19 @@ fn parse_input(input: &str) -> Vec<Vec<Direction>> {
 #[aoc(day24, part1)]
 fn part1(directions: &[Vec<Direction>]) -> usize {
     let floor = build_floor(directions);
-    floor.into_iter().filter(|(_, c)| c == &Color::Black).count()
+    floor
+        .into_iter()
+        .filter(|(_, c)| c == &Color::Black)
+        .count()
 }
 #[aoc(day24, part2)]
 fn part2(directions: &[Vec<Direction>]) -> usize {
     let mut floor = build_floor(directions);
     conways_game(&mut floor, 100);
-    floor.into_iter().filter(|(_, c)| c == &Color::Black).count()
+    floor
+        .into_iter()
+        .filter(|(_, c)| c == &Color::Black)
+        .count()
 }
 
 #[cfg(test)]

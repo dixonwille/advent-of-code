@@ -1,12 +1,4 @@
 /// https://adventofcode.com/2020/day/5
-use nom::{
-    branch::alt,
-    character::complete::{char as c, newline},
-    combinator::{all_consuming, map, value},
-    multi::{count, separated_list1},
-    sequence::tuple,
-    IResult,
-};
 
 #[derive(Debug, Eq, PartialEq)]
 struct Seat {
@@ -26,29 +18,22 @@ impl Seat {
 
 #[aoc_generator(day5)]
 fn parse_input(input: &str) -> Vec<Seat> {
-    let (_, seats) = parse_input_nom(input).unwrap();
-    seats
-}
-
-fn parse_row(input: &str) -> IResult<&str, u8> {
-    let (input, val) = count(alt((value('1', c('B')), value('0', c('F')))), 7)(input)?;
-    let col_string: String = val.into_iter().collect();
-    Ok((input, u8::from_str_radix(&col_string, 2).unwrap()))
-}
-
-fn parse_col(input: &str) -> IResult<&str, u8> {
-    let (input, val) = count(alt((value('1', c('R')), value('0', c('L')))), 3)(input)?;
-    let row_string: String = val.into_iter().collect();
-    Ok((input, u8::from_str_radix(&row_string, 2).unwrap()))
-}
-
-fn parse_input_nom(input: &str) -> IResult<&str, Vec<Seat>> {
-    all_consuming(separated_list1(
-        newline,
-        map(tuple((parse_row, parse_col)), |info| {
-            Seat::new(info.0, info.1)
-        }),
-    ))(input)
+    input.lines().map(|l| {
+        let line = l.as_bytes();
+        let row = line.iter().take(7).map(|b| match b {
+            b'B' => "1",
+            b'F' => "0",
+            _ => unreachable!()
+        }).collect::<String>();
+        let row = u8::from_str_radix(&row, 2).unwrap();
+        let col = line.iter().skip(7).map(|b| match b {
+            b'R' => "1",
+            b'L' => "0",
+            _ => unreachable!()
+        }).collect::<String>();
+        let col = u8::from_str_radix(&col, 2).unwrap();
+        Seat::new(row, col)
+    }).collect()
 }
 
 #[aoc(day5, part1)]

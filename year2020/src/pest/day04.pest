@@ -1,0 +1,5 @@
+value = @{ (ASCII_ALPHANUMERIC | "#")+ }
+key = { "byr" | "iyr" | "eyr" | "hgt" | "hcl" | "ecl" | "pid" | "cid" }
+field = ${ key ~ ":" ~  value }
+passport = { (field ~ (" " | NEWLINE)?)+ }
+file = _{ SOI ~ (passport ~ NEWLINE?)+ ~ EOI }

@@ -1,10 +1,4 @@
 /// https://adventofcode.com/2020/day/3
-use nom::{
-    character::complete::{line_ending, one_of},
-    combinator::{all_consuming, map},
-    multi::{many1, separated_list1},
-    IResult,
-};
 
 #[derive(Debug, PartialEq, Eq)]
 struct Map {
@@ -58,30 +52,24 @@ impl<'a> Iterator for MapIter<'a> {
 
 #[aoc_generator(day3)]
 fn parse_input(input: &str) -> Map {
-    let (_, map) = parse_input_nom(input).unwrap();
-    map
-}
-
-fn parse_input_nom(input: &str) -> IResult<&str, Map> {
-    let (input, map) = all_consuming(separated_list1(
-        line_ending,
-        many1(map(one_of(".#"), |c| match c {
-            '.' => false,
-            '#' => true,
-            _ => unreachable!("only matches on . or #"),
-        })),
-    ))(input)?;
-    let rows = map.len();
-    let cols = map[0].len();
-    let map = map.into_iter().flatten().collect::<Vec<bool>>();
-    Ok((
-        input,
-        Map {
-            rows,
-            cols,
-            data: map,
-        },
-    ))
+    let data = input
+        .lines()
+        .map(|l| {
+            l.as_bytes()
+                .iter()
+                .map(|b| match b {
+                    b'.' => false,
+                    b'#' => true,
+                    _ => unreachable!("only matches on . or #"),
+                })
+                .collect::<Vec<_>>()
+        })
+        .collect::<Vec<_>>();
+    Map {
+        rows: data.len(),
+        cols: data[0].len(),
+        data: data.into_iter().flatten().collect(),
+    }
 }
 
 #[aoc(day3, part1)]

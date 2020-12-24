@@ -1,15 +1,6 @@
 /// https://adventofcode.com/2020/day/4
-use std::collections::HashMap;
-
-use nom::{
-    branch::alt,
-    bytes::complete::{tag, take_till1},
-    character::complete::{char as c, newline, one_of},
-    combinator::all_consuming,
-    combinator::{map_res, opt},
-    multi::{many1, separated_list1},
-    IResult,
-};
+use pest::Parser;
+use std::{collections::HashMap, str::FromStr};
 
 #[derive(Eq, PartialEq, Hash)]
 enum PassportField {
@@ -23,8 +14,10 @@ enum PassportField {
     CountryId,
 }
 
-impl PassportField {
-    fn from_str(s: &str) -> Result<Self, &str> {
+impl FromStr for PassportField {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "byr" => Ok(PassportField::BirthYear),
             "iyr" => Ok(PassportField::IssueYear),
@@ -142,63 +135,52 @@ impl Passport {
     }
 }
 
-#[aoc_generator(day4)]
+#[derive(Parser)]
+#[grammar = "pest/day04.pest"]
+struct InputParser;
+
+#[aoc_generator(day4, nom)]
 fn parse_input(input: &str) -> Vec<Passport> {
-    let (_, passports) = parse_input_nom(input).unwrap();
-    passports
-}
-
-fn parse_field(input: &str) -> IResult<&str, (PassportField, &str)> {
-    let (input, key) = map_res(
-        alt((
-            tag("byr"),
-            tag("iyr"),
-            tag("eyr"),
-            tag("hgt"),
-            tag("hcl"),
-            tag("ecl"),
-            tag("pid"),
-            tag("cid"),
-        )),
-        |key: &str| PassportField::from_str(key),
-    )(input)?;
-    let (input, _) = c(':')(input)?;
-    let (input, value) = take_till1(|c: char| c == ' ' || c == '\n')(input)?;
-    let (input, _) = opt(one_of(" \n"))(input)?; // grab the characters but I could be at the end of file!
-    Ok((input, (key, value)))
-}
-
-fn parse_passport(input: &str) -> IResult<&str, Passport> {
-    let (input, fields) = many1(parse_field)(input)?;
-    let mut map = HashMap::new();
-    for (key, value) in fields {
-        map.insert(key, value);
-    }
-    Ok((
-        input,
-        Passport {
-            birth_year: map
-                .get(&PassportField::BirthYear)
-                .map(|s| s.parse().unwrap()),
-            issue_year: map
-                .get(&PassportField::IssueYear)
-                .map(|s| s.parse().unwrap()),
-            expiration_year: map
-                .get(&PassportField::ExpirationYear)
-                .map(|s| s.parse().unwrap()),
-            height: map.get(&PassportField::Height).map(|s| s.to_string()),
-            hair_color: map.get(&PassportField::HairColor).map(|s| s.to_string()),
-            eye_color: map.get(&PassportField::EyeColor).map(|s| s.to_string()),
-            passport_id: map.get(&PassportField::PassportId).map(|s| s.to_string()),
-            country_id: map
-                .get(&PassportField::CountryId)
-                .map(|s| s.parse().unwrap()),
-        },
-    ))
-}
-
-fn parse_input_nom(input: &str) -> IResult<&str, Vec<Passport>> {
-    all_consuming(separated_list1(newline, parse_passport))(input)
+    InputParser::parse(Rule::file, input)
+        .expect("could not parse input")
+        .filter(|r| r.as_rule() == Rule::passport)
+        .map(|p| {
+            let fields: HashMap<_, _> = p
+                .into_inner()
+                .map(|f| {
+                    let mut field = f.into_inner();
+                    let key = field
+                        .next()
+                        .unwrap()
+                        .as_str()
+                        .parse::<PassportField>()
+                        .unwrap();
+                    let value = field.next().unwrap().as_str();
+                    (key, value)
+                })
+                .collect();
+            Passport {
+                birth_year: fields
+                    .get(&PassportField::BirthYear)
+                    .map(|s| s.parse().unwrap()),
+                issue_year: fields
+                    .get(&PassportField::IssueYear)
+                    .map(|s| s.parse().unwrap()),
+                expiration_year: fields
+                    .get(&PassportField::ExpirationYear)
+                    .map(|s| s.parse().unwrap()),
+                height: fields.get(&PassportField::Height).map(|s| s.to_string()),
+                hair_color: fields.get(&PassportField::HairColor).map(|s| s.to_string()),
+                eye_color: fields.get(&PassportField::EyeColor).map(|s| s.to_string()),
+                passport_id: fields
+                    .get(&PassportField::PassportId)
+                    .map(|s| s.to_string()),
+                country_id: fields
+                    .get(&PassportField::CountryId)
+                    .map(|s| s.parse().unwrap()),
+            }
+        })
+        .collect()
 }
 
 #[aoc(day4, part1)]

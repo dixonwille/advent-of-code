@@ -1,13 +1,6 @@
 /// https://adventofcode.com/2020/day/2
+use pest::Parser;
 use std::ops::Deref;
-
-use nom::{
-    bytes::complete::tag,
-    character::complete::{alpha1, anychar, char as c, digit1, line_ending},
-    combinator::{all_consuming, map, map_res},
-    multi::separated_list1,
-    IResult,
-};
 
 #[derive(Debug, Eq, PartialEq)]
 struct Policy {
@@ -52,37 +45,34 @@ impl Deref for Password {
     }
 }
 
+#[derive(Parser)]
+#[grammar = "pest/day02.pest"]
+struct InputParser;
+
 #[aoc_generator(day2)]
 fn parse_input(input: &str) -> Vec<Password> {
-    let (_, passwords) = parse_input_nom(input).unwrap();
-    passwords
-}
-
-#[inline]
-fn take_digits(input: &str) -> IResult<&str, usize> {
-    map_res(digit1, |s: &str| s.parse())(input)
-}
-
-#[inline]
-fn take_alpha_bytes(input: &str) -> IResult<&str, Vec<u8>> {
-    map(alpha1, |s: &str| s.as_bytes().to_owned())(input)
-}
-
-#[inline]
-fn take_password(input: &str) -> IResult<&str, Password> {
-    let (input, req1) = take_digits(input)?;
-    let (input, _) = c('-')(input)?;
-    let (input, req2) = take_digits(input)?;
-    let (input, _) = c(' ')(input)?;
-    let (input, character) = anychar(input)?;
-    let (input, _) = tag(": ")(input)?;
-    let (input, value) = take_alpha_bytes(input)?;
-    Ok((input, Password::new(req1, req2, character, value)))
-}
-
-#[inline]
-fn parse_input_nom(input: &str) -> IResult<&str, Vec<Password>> {
-    all_consuming(separated_list1(line_ending, take_password))(input)
+    InputParser::parse(Rule::file, input)
+        .expect("could not parse input")
+        .filter(|r| r.as_rule() == Rule::validation)
+        .map(|v| {
+            let mut validation = v.into_inner();
+            let req1 = validation
+                .next()
+                .unwrap()
+                .as_str()
+                .parse::<usize>()
+                .unwrap();
+            let req2 = validation
+                .next()
+                .unwrap()
+                .as_str()
+                .parse::<usize>()
+                .unwrap();
+            let character = validation.next().unwrap().as_str().chars().next().unwrap();
+            let password = validation.next().unwrap().as_str().as_bytes().to_vec();
+            Password::new(req1, req2, character, password)
+        })
+        .collect()
 }
 
 #[aoc(day2, part1)]

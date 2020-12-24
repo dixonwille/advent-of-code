@@ -5,7 +5,7 @@ use std::collections::{HashSet, VecDeque};
 use std::hash::{Hash, Hasher};
 
 #[derive(Parser)]
-#[grammar = "day22.pest"]
+#[grammar = "pest/day22.pest"]
 struct InputParser;
 
 #[aoc_generator(day22)]

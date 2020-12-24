@@ -1,0 +1,3 @@
+declaration = @{ ASCII_ALPHA+ }
+group = { (declaration ~ NEWLINE?)+ }
+file = _{ SOI ~ (group ~ NEWLINE?)+ ~ EOI }

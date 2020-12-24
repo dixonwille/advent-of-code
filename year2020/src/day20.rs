@@ -369,7 +369,7 @@ impl Map {
 }
 
 #[derive(Parser)]
-#[grammar = "day20.pest"]
+#[grammar = "pest/day20.pest"]
 struct InputParser;
 
 #[aoc_generator(day20)]

@@ -1,13 +1,6 @@
 /// https://adventofcode.com/2020/day/6
+use pest::Parser;
 use std::collections::HashSet;
-
-use nom::{
-    character::complete::{alpha1, newline},
-    combinator::all_consuming,
-    multi::separated_list1,
-    sequence::tuple,
-    IResult,
-};
 
 #[derive(Debug, Eq, PartialEq)]
 struct Declaration {
@@ -21,12 +14,7 @@ struct DeclarationGroup {
 
 impl DeclarationGroup {
     fn condense(&self) -> HashSet<char> {
-        self.group.iter().fold(HashSet::new(), |mut set, g| {
-            for g in &g.yes {
-                set.insert(g.to_owned());
-            }
-            set
-        })
+        self.group.iter().map(|g| g.yes.clone()).flatten().collect()
     }
 
     fn condense_all(&self) -> HashSet<char> {
@@ -47,31 +35,24 @@ impl DeclarationGroup {
     }
 }
 
+#[derive(Parser)]
+#[grammar = "pest/day06.pest"]
+struct InputParser;
+
 #[aoc_generator(day6)]
 fn parse_input(input: &str) -> Vec<DeclarationGroup> {
-    let (_, declarations) = parse_input_nom(input).unwrap();
-    declarations
-}
-
-fn parse_declaration(input: &str) -> IResult<&str, Declaration> {
-    let (input, chars) = alpha1(input)?;
-    let mut set = HashSet::new();
-    for c in chars.chars() {
-        set.insert(c);
-    }
-    Ok((input, Declaration { yes: set }))
-}
-
-fn parse_declaration_group(input: &str) -> IResult<&str, DeclarationGroup> {
-    let (input, decs) = separated_list1(newline, parse_declaration)(input)?;
-    Ok((input, DeclarationGroup { group: decs }))
-}
-
-fn parse_input_nom(input: &str) -> IResult<&str, Vec<DeclarationGroup>> {
-    all_consuming(separated_list1(
-        tuple((newline, newline)),
-        parse_declaration_group,
-    ))(input)
+    InputParser::parse(Rule::file, input)
+        .expect("could not parse input")
+        .filter(|r| r.as_rule() == Rule::group)
+        .map(|g| DeclarationGroup {
+            group: g
+                .into_inner()
+                .map(|d| Declaration {
+                    yes: d.as_str().chars().collect(),
+                })
+                .collect(),
+        })
+        .collect()
 }
 
 #[aoc(day6, part1)]
