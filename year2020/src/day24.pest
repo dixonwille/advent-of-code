@@ -1,0 +1,3 @@
+dir = @{ ("s" | "n" )? ~ ("e" | "w") }
+moves = ${ dir+ ~ NEWLINE? }
+file = _{ SOI ~ moves+ ~ EOI }
