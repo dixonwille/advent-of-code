@@ -10,7 +10,7 @@ pub fn parse_input(input: &str) -> Vec<usize> {
 
 #[aoc(day1, part1)]
 fn part1(depths: &[usize]) -> Option<usize> {
-    let sec = depths.clone();
+    let sec = <&[usize]>::clone(&depths);
     let increased =
         depths.iter().zip(sec.iter().skip(1)).fold(
             0,
@@ -27,8 +27,8 @@ fn part1(depths: &[usize]) -> Option<usize> {
 
 #[aoc(day1, part2)]
 fn part2(depths: &[usize]) -> Option<usize> {
-    let sec = depths.clone();
-    let third = depths.clone();
+    let sec = <&[usize]>::clone(&depths);
+    let third = <&[usize]>::clone(&depths);
     let groups = depths
         .iter()
         .zip(sec.iter().skip(1).zip(third.iter().skip(2)))
