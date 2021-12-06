@@ -1,3 +1,5 @@
+/// https://adventofcode.com/2021/day/1
+
 #[aoc_generator(day1)]
 pub fn parse_input(input: &str) -> Vec<usize> {
     input
