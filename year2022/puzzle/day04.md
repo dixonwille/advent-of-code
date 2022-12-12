@@ -52,8 +52,6 @@ Some of the pairs have noticed that one of their assignments *fully contains* th
 
 Your puzzle answer was `498`.
 
-The first half of this puzzle is complete! It provides one gold star: \*
-
 \--- Part Two ---
 ----------
 
@@ -70,8 +68,12 @@ So, in this example, the number of overlapping assignment pairs is `*4*`.
 
 *In how many assignment pairs do the ranges overlap?*
 
-Answer:
+Your puzzle answer was `859`.
 
-Although it hasn't changed, you can still [get your puzzle input](4/input).
+Both parts of this puzzle are complete! They provide two gold stars: \*\*
 
-You can also [Shareon [Twitter](https://twitter.com/intent/tweet?text=I%27ve+completed+Part+One+of+%22Camp+Cleanup%22+%2D+Day+4+%2D+Advent+of+Code+2022&url=https%3A%2F%2Fadventofcode%2Ecom%2F2022%2Fday%2F4&related=ericwastl&hashtags=AdventOfCode) [Mastodon](javascript:void(0);)] this puzzle.
+At this point, you should [return to your Advent calendar](/2022) and try another puzzle.
+
+If you still want to see it, you can [get your puzzle input](4/input).
+
+You can also [Shareon [Twitter](https://twitter.com/intent/tweet?text=I%27ve+completed+%22Camp+Cleanup%22+%2D+Day+4+%2D+Advent+of+Code+2022&url=https%3A%2F%2Fadventofcode%2Ecom%2F2022%2Fday%2F4&related=ericwastl&hashtags=AdventOfCode) [Mastodon](javascript:void(0);)] this puzzle.

@@ -16,7 +16,7 @@ pub fn run_part_b() -> Result<()> {
 
 type Parsed = Vec<char>;
 
-fn parse(input: &str) -> Result<Vec<char>> {
+fn parse(input: &str) -> Result<Parsed> {
     Ok(input.chars().collect())
 }
 

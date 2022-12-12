@@ -73,8 +73,6 @@ The Elves just need to know *which crate will end up on top of each stack*; in t
 
 Your puzzle answer was `LJSVLTWQM`.
 
-The first half of this puzzle is complete! It provides one gold star: \*
-
 \--- Part Two ---
 ----------
 
@@ -141,8 +139,12 @@ In this example, the CrateMover 9001 has put the crates in a totally different o
 
 Before the rearrangement process finishes, update your simulation so that the Elves know where they should stand to be ready to unload the final supplies. *After the rearrangement procedure completes, what crate ends up on top of each stack?*
 
-Answer:
+Your puzzle answer was `BRQWDBBJM`.
 
-Although it hasn't changed, you can still [get your puzzle input](5/input).
+Both parts of this puzzle are complete! They provide two gold stars: \*\*
 
-You can also [Shareon [Twitter](https://twitter.com/intent/tweet?text=I%27ve+completed+Part+One+of+%22Supply+Stacks%22+%2D+Day+5+%2D+Advent+of+Code+2022&url=https%3A%2F%2Fadventofcode%2Ecom%2F2022%2Fday%2F5&related=ericwastl&hashtags=AdventOfCode) [Mastodon](javascript:void(0);)] this puzzle.
+At this point, you should [return to your Advent calendar](/2022) and try another puzzle.
+
+If you still want to see it, you can [get your puzzle input](5/input).
+
+You can also [Shareon [Twitter](https://twitter.com/intent/tweet?text=I%27ve+completed+%22Supply+Stacks%22+%2D+Day+5+%2D+Advent+of+Code+2022&url=https%3A%2F%2Fadventofcode%2Ecom%2F2022%2Fday%2F5&related=ericwastl&hashtags=AdventOfCode) [Mastodon](javascript:void(0);)] this puzzle.

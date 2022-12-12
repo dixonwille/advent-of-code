@@ -1,0 +1,13 @@
+download day: (puzzle day) (input day)
+
+puzzle day:
+    aoc download -d {{day}} -P -p puzzle/day{{day}}.md -o
+
+input day:
+    aoc download -d {{day}} -I -i src/inputs/day{{day}}.txt -o
+
+answer day part ans:
+    aoc submit -d {{day}} {{part}} {{ans}}
+
+run day part:
+    cargo run {{day}} {{part}}
