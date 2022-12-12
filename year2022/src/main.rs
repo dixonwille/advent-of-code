@@ -26,6 +26,8 @@ fn main() -> Result<()> {
         (10, 2) => day10::run_part_b(),
         (11, 1) => day11::run_part_a(),
         (11, 2) => day11::run_part_b(),
+        (12, 1) => day12::run_part_a(),
+        (12, 2) => day12::run_part_b(),
         _ => unimplemented!(),
     }
 }
@@ -41,6 +43,7 @@ mod day08;
 mod day09;
 mod day10;
 mod day11;
+mod day12;
 
 #[derive(Parser)]
 struct Cli {
