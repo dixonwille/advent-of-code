@@ -1,0 +1,23 @@
+// Common
+ws = _{ " " }
+cmd_start = _{ "$ " }
+ent_dir_start = _{ "dir " }
+
+dir_name = @{ ASCII_ALPHA+ }
+file_name = @{ (ASCII_ALPHA | ".")+ }
+file_size = @{ ASCII_DIGIT+ }
+
+cmd_chg_dir_root = { "/" }
+cmd_chg_dir_up = { ".." }
+cmd_chg_dir = { "cd " ~ (cmd_chg_dir_up | dir_name | cmd_chg_dir_root) }
+cmd_ls_dir = { "ls" }
+command = { cmd_start ~ (cmd_chg_dir | cmd_ls_dir) ~ NEWLINE }
+
+ent_dir = { ent_dir_start ~ dir_name }
+ent_file = { file_size ~ ws ~ file_name }
+entry = { (ent_dir | ent_file) ~ NEWLINE }
+
+prompt = { command | entry }
+prompts = { prompt+ }
+
+file = { SOI ~ prompts ~ NEWLINE? ~ EOI }

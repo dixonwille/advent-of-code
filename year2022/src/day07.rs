@@ -1,15 +1,7 @@
 use std::{cell::RefCell, fmt::Debug, rc::Rc};
 
-use anyhow::{Ok, Result};
-use nom::{
-    branch::alt,
-    bytes::complete::{tag, take_until1},
-    character::complete::{alpha1, char as character, digit1, line_ending},
-    combinator::{map, map_res},
-    multi::many1,
-    sequence::{preceded, separated_pair, terminated},
-    IResult,
-};
+use anyhow::Result;
+use pest_consume::{match_nodes, Parser};
 
 const INPUT: &str = include_str!("inputs/day07.txt");
 
@@ -109,47 +101,101 @@ impl Tree {
 type Parsed<'a> = Vec<Prompt<'a>>;
 type Built = Tree;
 
-fn command(input: &str) -> IResult<&str, Command> {
-    let prompt = terminated(character('$'), character(' '));
-    let ls_command = map(tag("ls"), |_| Command::ListDirectory);
-    let cd_command = map(
-        separated_pair(
-            tag("cd"),
-            character(' '),
-            alt((
-                map(tag(".."), |_| Directory::Up),
-                map(tag("/"), |_| Directory::Root),
-                map(alpha1, |d| Directory::Specific(d)),
-            )),
-        ),
-        |(_, p)| Command::ChangeDirectory(p),
-    );
-    terminated(preceded(prompt, alt((ls_command, cd_command))), line_ending)(input)
-}
+#[derive(Parser)]
+#[grammar = "pegs/day07.pest"]
+struct Day07Parser;
 
-fn entry(input: &str) -> IResult<&str, Entry> {
-    let dir_entry = map(
-        separated_pair(tag("dir"), character(' '), alpha1),
-        |(_, p)| Entry::Directory(p),
-    );
-    let file_entry = map(
-        separated_pair(
-            map_res(digit1, str::parse),
-            character(' '),
-            take_until1("\n"),
-        ),
-        |(size, p)| Entry::File(size, p),
-    );
-    terminated(alt((dir_entry, file_entry)), line_ending)(input)
+type Node<'i> = pest_consume::Node<'i, Rule, ()>;
+type PResult<T> = std::result::Result<T, pest_consume::Error<Rule>>;
+
+#[pest_consume::parser]
+impl Day07Parser {
+    fn file(input: Node) -> PResult<Parsed> {
+        Ok(match_nodes!(input.into_children();
+            [prompts(prompts), EOI(_)] => prompts
+        ))
+    }
+
+    fn prompts(input: Node) -> PResult<Parsed> {
+        Ok(match_nodes!(input.into_children();
+            [prompt(prompt)..] => prompt.collect()
+        ))
+    }
+
+    fn prompt(input: Node) -> PResult<Prompt> {
+        Ok(match_nodes!(input.into_children();
+            [command(prompt)] => prompt,
+            [entry(prompt)] => prompt
+        ))
+    }
+
+    fn entry(input: Node) -> PResult<Prompt> {
+        Ok(match_nodes!(input.into_children();
+            [ent_dir(ent)] => Prompt::Entry(ent),
+            [ent_file(ent)] => Prompt::Entry(ent)
+        ))
+    }
+
+    fn ent_dir(input: Node) -> PResult<Entry> {
+        Ok(match_nodes!(input.into_children();
+            [dir_name(name)] => Entry::Directory(name)
+        ))
+    }
+
+    fn ent_file(input: Node) -> PResult<Entry> {
+        Ok(match_nodes!(input.into_children();
+            [file_size(size), file_name(name)] => Entry::File(size, name)
+        ))
+    }
+
+    fn command(input: Node) -> PResult<Prompt> {
+        Ok(match_nodes!(input.into_children();
+            [cmd_chg_dir(cmd)] => Prompt::Command(cmd),
+            [cmd_ls_dir(cmd)] => Prompt::Command(cmd),
+        ))
+    }
+
+    fn cmd_ls_dir(_input: Node) -> PResult<Command> {
+        Ok(Command::ListDirectory)
+    }
+
+    fn cmd_chg_dir(input: Node) -> PResult<Command> {
+        Ok(match_nodes!(input.into_children();
+            [cmd_chg_dir_up(dir)] => Command::ChangeDirectory(dir),
+            [cmd_chg_dir_root(dir)] => Command::ChangeDirectory(dir),
+            [dir_name(dir)] => Command::ChangeDirectory(Directory::Specific(dir)),
+        ))
+    }
+
+    fn cmd_chg_dir_root(_input: Node) -> PResult<Directory> {
+        Ok(Directory::Root)
+    }
+
+    fn cmd_chg_dir_up(_input: Node) -> PResult<Directory> {
+        Ok(Directory::Up)
+    }
+
+    fn dir_name(input: Node) -> PResult<&str> {
+        Ok(input.as_str())
+    }
+
+    fn file_name(input: Node) -> PResult<&str> {
+        Ok(input.as_str())
+    }
+
+    fn file_size(input: Node) -> PResult<usize> {
+        input.as_str().parse().map_err(|e| input.error(e))
+    }
+
+    fn EOI(_input: Node) -> PResult<()> {
+        Ok(())
+    }
 }
 
 fn parse(input: &str) -> Result<Parsed> {
-    let (_, out) = many1(alt((
-        map(command, |c| Prompt::Command(c)),
-        map(entry, |e| Prompt::Entry(e)),
-    )))(input)
-    .map_err(|e| e.to_owned())?;
-    Ok(out)
+    let inputs = Day07Parser::parse(Rule::file, input)?;
+    let input = inputs.single()?;
+    Day07Parser::file(input).map_err(|e| e.into())
 }
 
 fn build(raw: Parsed) -> Built {
@@ -307,33 +353,6 @@ $ ls
 7214296 k
 
 ";
-
-    #[test]
-    fn test_command_parse() {
-        assert_eq!(
-            command("$ cd /\n").unwrap(),
-            ("", Command::ChangeDirectory(Directory::Root))
-        );
-        assert_eq!(
-            command("$ cd ..\n").unwrap(),
-            ("", Command::ChangeDirectory(Directory::Up))
-        );
-        assert_eq!(
-            command("$ cd bqm\n").unwrap(),
-            ("", Command::ChangeDirectory(Directory::Specific("bqm")))
-        );
-        assert_eq!(command("$ ls\n").unwrap(), ("", Command::ListDirectory));
-    }
-
-    #[test]
-    fn test_entry_parse() {
-        assert_eq!(entry("dir bqm\n").unwrap(), ("", Entry::Directory("bqm")));
-        assert_eq!(
-            entry("1234 bqm.cjj\n").unwrap(),
-            ("", Entry::File(1234, "bqm.cjj"))
-        );
-        assert_eq!(entry("5678 bqm\n").unwrap(), ("", Entry::File(5678, "bqm")));
-    }
 
     #[test]
     fn test_parse() {
