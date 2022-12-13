@@ -1,0 +1,11 @@
+// Common
+ws = _{ " " }
+
+number = @{ "-"? ~ ASCII_DIGIT+ }
+
+cmd_addx = { "addx " ~ number }
+cmd_noop = { "noop" }
+cmd = { (cmd_addx | cmd_noop) ~ NEWLINE }
+commands = { cmd+ }
+
+file = { SOI ~ commands ~ NEWLINE? ~ EOI }

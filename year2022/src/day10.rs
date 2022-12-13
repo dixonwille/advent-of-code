@@ -1,15 +1,7 @@
 use std::fmt::Write;
 
-use anyhow::{Ok, Result};
-use nom::{
-    branch::alt,
-    bytes::complete::tag,
-    character::complete::{char as character, digit1, line_ending},
-    combinator::{map, opt},
-    multi::many1,
-    sequence::{pair, separated_pair, terminated},
-    IResult,
-};
+use anyhow::Result;
+use pest_consume::{match_nodes, Parser};
 
 const INPUT: &str = include_str!("inputs/day10.txt");
 
@@ -33,28 +25,57 @@ enum Command {
 
 type Parsed = Vec<Command>;
 
-fn command(input: &str) -> IResult<&str, Command> {
-    let noop = map(tag("noop"), |_| Command::Noop);
-    let addx = map(
-        separated_pair(
-            tag("addx"),
-            character::<&str, _>(' '),
-            pair(opt(character('-')), digit1),
-        ),
-        |(_, (neg, v))| {
-            let mut val = v.parse::<isize>().unwrap();
-            if neg.is_some() {
-                val *= -1;
-            }
-            Command::Addx(val)
-        },
-    );
-    terminated(alt((noop, addx)), line_ending)(input)
+#[derive(Parser)]
+#[grammar = "pegs/day10.pest"]
+struct Day10Parser;
+
+type Node<'i> = pest_consume::Node<'i, Rule, ()>;
+type PResult<T> = std::result::Result<T, pest_consume::Error<Rule>>;
+
+#[pest_consume::parser]
+impl Day10Parser {
+    fn file(input: Node) -> PResult<Parsed> {
+        Ok(match_nodes!(input.into_children();
+            [commands(cmds), EOI(_)] => cmds
+        ))
+    }
+
+    fn commands(input: Node) -> PResult<Parsed> {
+        Ok(match_nodes!(input.into_children();
+            [cmd(c)..] => c.collect()
+        ))
+    }
+
+    fn cmd(input: Node) -> PResult<Command> {
+        Ok(match_nodes!(input.into_children();
+            [cmd_addx(cmd)] => cmd,
+            [cmd_noop(cmd)] => cmd
+        ))
+    }
+
+    fn cmd_addx(input: Node) -> PResult<Command> {
+        Ok(match_nodes!(input.into_children();
+            [number(n)] => Command::Addx(n)
+        ))
+    }
+
+    fn cmd_noop(_input: Node) -> PResult<Command> {
+        Ok(Command::Noop)
+    }
+
+    fn number(input: Node) -> PResult<isize> {
+        input.as_str().parse().map_err(|e| input.error(e))
+    }
+
+    fn EOI(_input: Node) -> PResult<()> {
+        Ok(())
+    }
 }
 
 fn parse(input: &str) -> Result<Parsed> {
-    let (_, res) = many1(command)(input).map_err(|e| e.to_owned())?;
-    Ok(res)
+    let inputs = Day10Parser::parse(Rule::file, input)?;
+    let input = inputs.single()?;
+    Day10Parser::file(input).map_err(|e| e.into())
 }
 
 fn part_a(commands: Parsed) -> Result<isize> {
