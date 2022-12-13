@@ -1,0 +1,27 @@
+// Common
+ws = _{ " " }
+open_bracket = _{ "[" }
+close_bracket = _{ "]" }
+kw_move = _{ "move " }
+kw_from = _{ " from " }
+kw_to = _{ " to " }
+
+number =  { ASCII_DIGIT+ }
+cargo_name = { ASCII_ALPHA_UPPER }
+empty_cargo = { "   " }
+stack_name = { ASCII_DIGIT }
+
+// Cargo Initial Header
+cargo = ${ (open_bracket ~ cargo_name ~ close_bracket) | empty_cargo }
+stack = ${ ws ~ stack_name ~ ws }
+cargo_row = { ((cargo ~ ws) | cargo)+ ~ NEWLINE }
+stack_row = { ((stack ~ ws) | stack)+ ~ NEWLINE }
+cargo_rows = { cargo_row+ }
+initial_header =  { cargo_rows ~ stack_row ~ NEWLINE}
+
+// Instructions
+instruction = { kw_move ~ number ~ kw_from ~ number ~ kw_to ~ number ~ NEWLINE }
+instructions = { instruction+ }
+
+file = { SOI ~ initial_header ~ instructions ~ NEWLINE ~ EOI }
+

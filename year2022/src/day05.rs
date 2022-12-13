@@ -1,13 +1,5 @@
 use anyhow::Result;
-use nom::{
-    branch::alt,
-    bytes::complete::{tag, take},
-    character::complete::{anychar, char as character, digit1, line_ending},
-    combinator::{all_consuming, map, map_parser, opt},
-    multi::{fold_many1, many1, separated_list1},
-    sequence::{delimited, preceded, terminated, tuple},
-    IResult,
-};
+use pest_consume::{match_nodes, Parser};
 
 const INPUT: &str = include_str!("inputs/day05.txt");
 
@@ -42,68 +34,99 @@ fn fold_cargo_row(mut acc: Vec<Vec<char>>, row: Vec<Option<char>>) -> Vec<Vec<ch
     acc
 }
 
-fn start_stack(input: &str) -> IResult<&str, Vec<Vec<char>>> {
-    let empty_cargo = map(tag("   "), |_| None);
-    let cargo = map(delimited(character('['), anychar, character(']')), |c| {
-        Some(c)
-    });
-    let maybe_cargo = map_parser(take(3u8), alt((cargo, empty_cargo)));
-    let cargo_row = terminated(separated_list1(character(' '), maybe_cargo), line_ending);
+#[derive(Parser)]
+#[grammar = "pegs/day05.pest"]
+struct Day05Parser;
 
-    let stack_num = delimited(character(' '), digit1, character(' '));
-    let stack_num_row = terminated(separated_list1(character(' '), stack_num), line_ending);
+type Node<'i> = pest_consume::Node<'i, Rule, ()>;
+type PResult<T> = std::result::Result<T, pest_consume::Error<Rule>>;
 
-    map(
-        terminated(
-            fold_many1(cargo_row, Vec::new, fold_cargo_row),
-            stack_num_row,
-        ),
-        |res| {
-            res.into_iter()
-                .map(|mut stack| {
-                    stack.reverse();
-                    stack
-                })
-                .collect()
-        },
-    )(input)
-}
+#[pest_consume::parser]
+impl Day05Parser {
+    fn file(input: Node) -> PResult<Parsed> {
+        Ok(match_nodes!(input.into_children();
+            [initial_header(stack), instructions(moves), EOI(_)] => Parsed{stack, moves}
+        ))
+    }
 
-fn arrange_instructions(input: &str) -> IResult<&str, Vec<(usize, usize, usize)>> {
-    let arrange_move = delimited(tag("move "), digit1::<&str, _>, character(' '));
-    let arrange_from = delimited(tag("from "), digit1, character(' '));
-    let arrange_to = preceded(tag("to "), digit1);
+    fn instructions(input: Node) -> PResult<Vec<(usize, usize, usize)>> {
+        Ok(match_nodes!(input.into_children();
+            [instruction(inst)..] => inst.collect()
+        ))
+    }
 
-    let arrange_instruction = terminated(
-        map(
-            tuple((arrange_move, arrange_from, arrange_to)),
-            |(m, f, t)| {
-                (
-                    m.parse().unwrap(),
-                    f.parse::<usize>().unwrap() - 1,
-                    t.parse::<usize>().unwrap() - 1,
-                )
-            },
-        ),
-        line_ending,
-    );
+    fn instruction(input: Node) -> PResult<(usize, usize, usize)> {
+        Ok(match_nodes!(input.into_children();
+            [number(count), number(from), number(to)] => (count, from-1, to-1)
+        ))
+    }
 
-    many1(arrange_instruction)(input)
+    fn number(input: Node) -> PResult<usize> {
+        input.as_str().parse().map_err(|e| input.error(e))
+    }
+
+    fn initial_header(input: Node) -> PResult<Vec<Vec<char>>> {
+        let cargo_rows = match_nodes!(input.into_children();
+            [cargo_rows(rows), stack_row(_)] => rows
+        );
+        Ok(cargo_rows
+            .into_iter()
+            .fold(Vec::new(), fold_cargo_row)
+            .into_iter()
+            .map(|mut stack| {
+                stack.reverse();
+                stack
+            })
+            .collect())
+    }
+
+    fn cargo_rows(input: Node) -> PResult<Vec<Vec<Option<char>>>> {
+        Ok(match_nodes!(input.into_children();
+            [cargo_row(row)..] => row.collect()
+        ))
+    }
+
+    fn cargo_row(input: Node) -> PResult<Vec<Option<char>>> {
+        Ok(match_nodes!(input.into_children();
+            [cargo(cargo)..] => cargo.collect()
+        ))
+    }
+
+    fn cargo(input: Node) -> PResult<Option<char>> {
+        Ok(match_nodes!(input.into_children();
+            [cargo_name(cargo)] => cargo,
+            [empty_cargo(cargo)] => cargo
+        ))
+    }
+
+    fn cargo_name(input: Node) -> PResult<Option<char>> {
+        Ok(Some(
+            input
+                .as_str()
+                .chars()
+                .next()
+                .ok_or(anyhow::Error::msg("cargo_name should have one character"))
+                .map_err(|e| input.error(e))?,
+        ))
+    }
+
+    fn empty_cargo(input: Node) -> PResult<Option<char>> {
+        Ok(None)
+    }
+
+    fn stack_row(_input: Node) -> PResult<()> {
+        Ok(())
+    }
+
+    fn EOI(_input: Node) -> PResult<()> {
+        Ok(())
+    }
 }
 
 fn parse(input: &str) -> Result<Parsed> {
-    let (_, res) = map(
-        all_consuming(tuple((
-            terminated(start_stack, line_ending),
-            terminated(arrange_instructions, opt(line_ending)),
-        ))),
-        |(stack, moves)| Parsed { stack, moves },
-    )(input)
-    .map_err(|e| {
-        dbg!(&e);
-        e.to_owned()
-    })?;
-    Ok(res)
+    let inputs = Day05Parser::parse(Rule::file, input)?;
+    let input = inputs.single()?;
+    Day05Parser::file(input).map_err(|e| e.into())
 }
 
 fn part_a(mut cargo: Parsed) -> Result<String> {
@@ -165,7 +188,7 @@ move 1 from 1 to 2
                 stack: vec![vec!['Z', 'N'], vec!['M', 'C', 'D'], vec!['P']],
                 moves: vec![(1, 1, 0), (3, 0, 2), (2, 1, 0), (1, 0, 1)]
             }
-        )
+        );
     }
 
     #[test]
