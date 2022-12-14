@@ -1,11 +1,4 @@
 use anyhow::{Ok, Result};
-use nom::{
-    character::complete::{alpha1, line_ending},
-    combinator::map_res,
-    multi::many1,
-    sequence::terminated,
-    IResult,
-};
 use pathfinding::prelude::bfs;
 
 const INPUT: &str = include_str!("inputs/day12.txt");
@@ -60,16 +53,16 @@ impl TryFrom<char> for Tile {
     }
 }
 
-fn parse_map(input: &str) -> IResult<&str, Vec<Vec<Tile>>> {
-    let line = map_res(terminated(alpha1, line_ending), |l: &str| {
-        l.chars().map(Tile::try_from).collect::<Result<Vec<_>>>()
-    });
-    many1(line)(input)
-}
-
 fn parse(input: &str) -> Result<Parsed> {
-    let (_, res) = parse_map(input).map_err(|e| e.to_owned())?;
-    Ok(res)
+    input
+        .lines()
+        .filter_map(|l| {
+            if l.is_empty() {
+                return None;
+            }
+            Some(l.chars().map(Tile::try_from).collect::<Result<Vec<_>>>())
+        })
+        .collect::<Result<Vec<_>>>()
 }
 
 fn find_start_end(map: &Parsed) -> (Pos, Pos) {

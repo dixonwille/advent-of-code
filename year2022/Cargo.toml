@@ -7,7 +7,6 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.66"
-nom = "7.1.1"
 clap = {version="4.0.29", features=["derive"]}
 pathfinding = "4.0.0"
 pest = "2.5.1"
