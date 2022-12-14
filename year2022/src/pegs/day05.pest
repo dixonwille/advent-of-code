@@ -23,5 +23,5 @@ initial_header =  { cargo_rows ~ stack_row ~ NEWLINE}
 instruction = { kw_move ~ number ~ kw_from ~ number ~ kw_to ~ number ~ NEWLINE }
 instructions = { instruction+ }
 
-file = { SOI ~ initial_header ~ instructions ~ NEWLINE ~ EOI }
+file = { SOI ~ initial_header ~ instructions ~ NEWLINE? ~ EOI }
 

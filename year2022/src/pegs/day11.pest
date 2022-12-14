@@ -1,0 +1,23 @@
+// Common
+ws = _{ " " }
+add = { " + " }
+mult = { " * " }
+old = { "old" }
+
+number = @{ ASCII_DIGIT+ }
+number_list = { ((number ~ ", ") | number)+ }
+op_value = { old | number }
+op_operator = { add | mult }
+op_expression = { op_value ~ op_operator ~ op_value }
+
+monkey_name = { "Monkey " ~ number  ~ ":" ~ NEWLINE }
+monkey_items = { "  Starting items: " ~ number_list  ~ NEWLINE }
+monkey_operation = { "  Operation: new = " ~ op_expression ~ NEWLINE }
+monkey_test = { "  Test: divisible by " ~ number ~ NEWLINE }
+monkey_truthy = { "    If true: throw to monkey " ~ number ~ NEWLINE }
+monkey_falsy = { "    If false: throw to monkey " ~ number ~ NEWLINE }
+
+monkey = { monkey_name ~ monkey_items ~ monkey_operation ~ monkey_test ~ monkey_truthy ~ monkey_falsy }
+monkeys = { ((monkey ~ NEWLINE) | monkey )+ }
+
+file = { SOI ~ monkeys ~ NEWLINE? ~ EOI }

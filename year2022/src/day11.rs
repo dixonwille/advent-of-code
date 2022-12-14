@@ -1,15 +1,7 @@
 use std::collections::HashMap;
 
-use anyhow::{Ok, Result};
-use nom::{
-    branch::alt,
-    bytes::complete::tag,
-    character::complete::{char as character, digit1, line_ending},
-    combinator::{map, map_res, opt},
-    multi::{many1, separated_list1},
-    sequence::{delimited, terminated, tuple},
-    IResult,
-};
+use anyhow::Result;
+use pest_consume::{match_nodes, Parser};
 
 const INPUT: &str = include_str!("inputs/day11.txt");
 
@@ -41,6 +33,11 @@ impl Monkey {
         self.inspected += 1;
         self.operation.evaluate(item)
     }
+}
+
+enum Operator {
+    Add,
+    Mul,
 }
 
 #[derive(Debug, PartialEq)]
@@ -75,68 +72,140 @@ impl Value {
 
 type Parsed = HashMap<usize, Monkey>;
 
-fn number(input: &str) -> IResult<&str, usize> {
-    map_res(digit1, str::parse)(input)
-}
+#[derive(Parser)]
+#[grammar = "pegs/day11.pest"]
+struct Day11Parser;
 
-fn operator_value(input: &str) -> IResult<&str, Value> {
-    map_res(alt((tag("old"), digit1)), |v| {
-        if v == "old" {
-            Ok(Value::Old)
-        } else {
-            Ok(Value::Const(str::parse(v)?))
-        }
-    })(input)
-}
+type Node<'i> = pest_consume::Node<'i, Rule, ()>;
+type PResult<T> = std::result::Result<T, pest_consume::Error<Rule>>;
 
-fn expression(input: &str) -> IResult<&str, Expression> {
-    let operator = alt((character('*'), character('+')));
-    map(
-        tuple((
-            terminated(operator_value, character(' ')),
-            terminated(operator, character(' ')),
-            operator_value,
-        )),
-        |(l, o, r)| match o {
-            '*' => Expression::Mul(l, r),
-            '+' => Expression::Add(l, r),
-            _ => unreachable!(),
-        },
-    )(input)
-}
+#[pest_consume::parser]
+impl Day11Parser {
+    fn file(input: Node) -> PResult<Parsed> {
+        let monkeys = match_nodes!(input.into_children();
+            [monkeys(mks), EOI(_)] => mks
+        );
+        Ok(monkeys.into_iter().fold(HashMap::new(), |mut acc, m| {
+            acc.insert(m.name, m);
+            acc
+        }))
+    }
 
-fn parse_monkey(input: &str) -> IResult<&str, Monkey> {
-    let number_list = separated_list1(tag(", "), number);
+    fn monkeys(input: Node) -> PResult<Vec<Monkey>> {
+        Ok(match_nodes!(input.into_children();
+            [monkey(mk)..] => mk.collect()
+        ))
+    }
 
-    let name = delimited(tag("Monkey "), number, tag(":\n"));
-    let starting = delimited(tag("  Starting items: "), number_list, line_ending);
-    let operation = delimited(tag("  Operation: new = "), expression, line_ending);
-    let test = delimited(tag("  Test: divisible by "), number, line_ending);
-    let truthy = delimited(tag("    If true: throw to monkey "), number, line_ending);
-    let falsy = delimited(tag("    If false: throw to monkey "), number, line_ending);
-    map(
-        terminated(
-            tuple((name, starting, operation, test, truthy, falsy)),
-            opt(line_ending),
-        ),
-        |(name, items, operation, test_div_by, truthy, falsy)| Monkey {
-            name,
-            items,
-            operation,
-            test_div_by,
-            truthy,
-            falsy,
-            inspected: 0,
-        },
-    )(input)
+    fn monkey(input: Node) -> PResult<Monkey> {
+        Ok(match_nodes!(input.into_children();
+            [monkey_name(name),
+             monkey_items(items),
+             monkey_operation(operation),
+             monkey_test(test_div_by),
+             monkey_truthy(truthy),
+             monkey_falsy(falsy)] => Monkey {
+                name,
+                items,
+                operation,
+                test_div_by,
+                truthy,
+                falsy,
+                inspected: 0
+            }
+        ))
+    }
+
+    fn monkey_name(input: Node) -> PResult<usize> {
+        Ok(match_nodes!(input.into_children();
+            [number(n)] => n
+        ))
+    }
+
+    fn monkey_items(input: Node) -> PResult<Vec<usize>> {
+        Ok(match_nodes!(input.into_children();
+            [number_list(l)] => l
+        ))
+    }
+
+    fn monkey_operation(input: Node) -> PResult<Expression> {
+        Ok(match_nodes!(input.into_children();
+            [op_expression(e)] => e
+        ))
+    }
+
+    fn monkey_test(input: Node) -> PResult<usize> {
+        Ok(match_nodes!(input.into_children();
+            [number(n)] => n
+        ))
+    }
+
+    fn monkey_truthy(input: Node) -> PResult<usize> {
+        Ok(match_nodes!(input.into_children();
+            [number(n)] => n
+        ))
+    }
+
+    fn monkey_falsy(input: Node) -> PResult<usize> {
+        Ok(match_nodes!(input.into_children();
+            [number(n)] => n
+        ))
+    }
+
+    fn number_list(input: Node) -> PResult<Vec<usize>> {
+        Ok(match_nodes!(input.into_children();
+            [number(n)..] => n.collect()
+        ))
+    }
+
+    fn op_expression(input: Node) -> PResult<Expression> {
+        Ok(match_nodes!(input.into_children();
+            [op_value(l), op_operator(o), op_value(r)] => match o {
+                Operator::Add => Expression::Add(l, r),
+                Operator::Mul => Expression::Mul(l, r),
+            }
+        ))
+    }
+
+    fn op_value(input: Node) -> PResult<Value> {
+        Ok(match_nodes!(input.into_children();
+            [old(v)] => v,
+            [number(n)] => Value::Const(n)
+        ))
+    }
+
+    fn old(_input: Node) -> PResult<Value> {
+        Ok(Value::Old)
+    }
+
+    fn op_operator(input: Node) -> PResult<Operator> {
+        Ok(match_nodes!(input.into_children();
+            [add(o)] => o,
+            [mult(o)] => o
+        ))
+    }
+
+    fn add(_input: Node) -> PResult<Operator> {
+        Ok(Operator::Add)
+    }
+
+    fn mult(_input: Node) -> PResult<Operator> {
+        Ok(Operator::Mul)
+    }
+
+    fn number(input: Node) -> PResult<usize> {
+        input.as_str().parse().map_err(|e| input.error(e))
+    }
+
+    fn EOI(_input: Node) -> PResult<()> {
+        Ok(())
+    }
 }
 
 fn parse(input: &str) -> Result<Parsed> {
-    let (_, res) = many1(parse_monkey)(input).map_err(|e| e.to_owned())?;
-    Ok(res.into_iter().fold(HashMap::new(), |mut acc, m| {
-        acc.insert(m.name, m);
-        acc
-    }))
+    let inputs = Day11Parser::parse(Rule::file, input)?;
+    let input = inputs.single()?;
+    Day11Parser::file(input).map_err(|e| e.into())
 }
 
 fn part_a(mut monkeys: Parsed) -> Result<usize> {
