@@ -11,7 +11,7 @@ impl Solution<DAY_02> for Solutions {
     type Input<'i> = Vec<Game>;
     type Output = usize;
 
-    fn parse(puzzle: &str) -> Self::Input<'_> {
+    fn parse(puzzle: &str) -> Vec<Game> {
         puzzle
             .lines()
             .map(|line| {
@@ -46,7 +46,7 @@ impl Solution<DAY_02> for Solutions {
             .collect()
     }
 
-    fn part_one(input: &Self::Input<'_>) -> Self::Output {
+    fn part_one(input: &Vec<Game>) -> usize {
         input
             .into_iter()
             .filter_map(|game| {
@@ -63,7 +63,7 @@ impl Solution<DAY_02> for Solutions {
             .sum()
     }
 
-    fn part_two(input: &Self::Input<'_>) -> Self::Output {
+    fn part_two(input: &Vec<Game>) -> usize {
         input
             .into_iter()
             .map(|game| {
@@ -80,7 +80,7 @@ impl Solution<DAY_02> for Solutions {
 }
 
 impl Test<DAY_02> for Solutions {
-    fn expected(part: bool) -> Self::Output {
+    fn expected(part: bool) -> usize {
         match part {
             PART_ONE => 8,
             PART_TWO => 2286,

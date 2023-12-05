@@ -5,11 +5,11 @@ impl Solution<DAY_01> for Solutions {
     type Input<'i> = Vec<&'i str>;
     type Output = usize;
 
-    fn parse(puzzle: &str) -> Self::Input<'_> {
+    fn parse(puzzle: &str) -> Vec<&'_ str> {
         puzzle.lines().collect()
     }
 
-    fn part_one(input: &Self::Input<'_>) -> Self::Output {
+    fn part_one(input: &Vec<&'_ str>) -> usize {
         input
             .iter()
             .map(|line| {
@@ -23,7 +23,7 @@ impl Solution<DAY_01> for Solutions {
             .sum()
     }
 
-    fn part_two(input: &Self::Input<'_>) -> Self::Output {
+    fn part_two(input: &Vec<&'_ str>) -> usize {
         input
             .iter()
             .map(|line| {
@@ -68,7 +68,7 @@ impl Solution<DAY_01> for Solutions {
 }
 
 impl Test<DAY_01> for Solutions {
-    fn expected(part: bool) -> Self::Output {
+    fn expected(part: bool) -> usize {
         match part {
             PART_ONE => 142,
             PART_TWO => 281,

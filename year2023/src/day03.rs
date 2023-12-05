@@ -79,7 +79,7 @@ impl Solution<DAY_03> for Solutions {
     type Input<'i> = Engine;
     type Output = usize;
 
-    fn parse(puzzle: &str) -> Self::Input<'_> {
+    fn parse(puzzle: &str) -> Engine {
         let engine = puzzle
             .lines()
             .map(|line| {
@@ -107,7 +107,7 @@ impl Solution<DAY_03> for Solutions {
         }
     }
 
-    fn part_one(input: &Self::Input<'_>) -> Self::Output {
+    fn part_one(input: &Engine) -> usize {
         let mut next_i = 0;
         input
             .parts
@@ -131,7 +131,7 @@ impl Solution<DAY_03> for Solutions {
             .sum()
     }
 
-    fn part_two(input: &Self::Input<'_>) -> Self::Output {
+    fn part_two(input: &Engine) -> usize {
         input
             .parts
             .iter()
@@ -158,7 +158,7 @@ impl Solution<DAY_03> for Solutions {
 }
 
 impl Test<DAY_03> for Solutions {
-    fn expected(part: bool) -> Self::Output {
+    fn expected(part: bool) -> usize {
         match part {
             PART_ONE => 4361,
             PART_TWO => 467835,
