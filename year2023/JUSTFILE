@@ -1,0 +1,12 @@
+download day: (puzzle day) (input day)
+
+puzzle day:
+    mkdir -p puzzle
+    aoc download -d {{day}} -P -p puzzle/day$(printf "%02d" {{day}}).md -o
+
+input day:
+    mkdir -p inputs/
+    aoc download -d {{day}} -I -i inputs/day$(printf "%02d" {{day}}).txt -o
+
+answer day part ans:
+    aoc submit -d {{day}} {{part}} {{ans}}
