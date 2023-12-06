@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 itertools = "0.12.0"
 lib_aoc = "0.8.0"
+nom = "7.1.3"
