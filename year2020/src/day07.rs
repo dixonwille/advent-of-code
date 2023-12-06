@@ -79,7 +79,7 @@ fn parse_bag(input: &str) -> IResult<&str, Bag> {
 fn parse_input_nom(input: &str) -> IResult<&str, HashMap<String, Bag>> {
     all_consuming(fold_many1(
         terminated(parse_bag, tuple((c('.'), opt(c('\n'))))),
-        HashMap::new(),
+        HashMap::new,
         |mut map, bag| {
             map.insert(bag.description.clone(), bag);
             map

@@ -1,5 +1,3 @@
-use std::unimplemented;
-
 /// https://adventofcode.com/2020/day/25
 
 #[aoc_generator(day25)]
@@ -12,7 +10,7 @@ fn parse_input(input: &str) -> (usize, usize) {
 
 fn loop_size(key: &usize, subject_number: usize) -> usize {
     let mut l: usize = 0;
-    let mut value:usize = 1;
+    let mut value: usize = 1;
     loop {
         l += 1;
         value *= subject_number;
@@ -47,7 +45,7 @@ mod test {
 17807724";
 
     #[test]
-    fn parsing_input(){
+    fn parsing_input() {
         assert_eq!(parse_input(INPUT), (5764801, 17807724));
     }
 
@@ -69,3 +67,4 @@ mod test {
         assert_eq!(part1(&input), 14897079)
     }
 }
+

@@ -7,11 +7,11 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-aoc-runner = "0.3"
-aoc-runner-derive = "0.3"
-nom = "6.0"
-pathfinding = "2.1"
+aoc-runner = "0.3.0"
+aoc-runner-derive = "0.3.0"
+nom = "7.1.3"
+pathfinding = "4.4.0"
 bit = "0.1.1"
-once_cell = "1.5.2"
-pest = "2.1"
-pest_derive = "2.1"
+once_cell = "1.18.0"
+pest = "2.7.5"
+pest_derive = "2.7.5"
