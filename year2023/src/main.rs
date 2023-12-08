@@ -2,5 +2,5 @@ use lib_aoc::solve;
 use year2023::*;
 
 fn main() {
-    solve!(Solutions, 6);
+    solve!(Solutions, 7);
 }
